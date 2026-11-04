@@ -41,6 +41,9 @@
     beyond the federal platform list in the next six months of five new areas, and raised Pd at 5 false alarms per 1,000&nbsp;km² by +0.05
     (+0.03 to +0.09), without hiding any AIS-tracked ship. The pre-registered scoring, which left that list out by mistake, gave
     41% and +0.08.</li>
+    <li><b>On Canadian water.</b> Over the Grand Banks oil fields, with no AIS and no list of structures, the same map found 3 of the
+    regulator's 4 production installations and the new West White Rose platform, with no false spot. The fourth, SeaRose, appears on every pass
+    2.0&nbsp;km from its listed position, and swings too far for the map's 100&nbsp;m rule.</li>
     <li><b>Reproducible.</b> Every number on this page is read from a results file written by a script in the repository; the code has 109 tests, and every detector
     version and gate decision is in an MLflow registry.</li>
   </ul>
@@ -217,6 +220,27 @@
   (not from 27.2), and no AIS ship is exposed: the reading is unchanged, at about half the gain. Without Sabine Pass the gain is
   +0.036. The intervals resample passes within these five areas, so they do not cover variation between areas
   (<a href="https://github.com/shivaji-patil/maritime-target-correlation/blob/main/results/platform_sensitivity.md">platform check</a>).</p>
+</section>
+
+<section>
+  <h2>On the Grand Banks: does the map find the regulator's installations?</h2>
+  <p>A check on Canadian water, where no historical AIS is available. Production CFAR ran on 12 Sentinel-1 passes (HH/HV, November 2025 to October 2026) over
+  the Jeanne d'Arc Basin fields, about 350&nbsp;km east-southeast of St.&nbsp;John's. The six November–April passes built the map with no list of structures.
+  The installation list (the C-NLOPB layer, plus the West White Rose platform from the provincial layer), the pass rule and the success criterion were committed
+  before any radar data was fetched (a local commit; the earlier tests were timestamped on GitHub). Found means a map spot within 500&nbsp;m, the safety-zone radius.</p>
+  <div class="scroll"><table><thead><tr><th>Installation</th><th>Listed by</th><th>Nearest map spot</th><th>Result</th><th>Detected within 500&nbsp;m of the listed point</th></tr></thead>
+  <tbody><tr><td>Hibernia</td><td>C-NLOPB</td><td>85&nbsp;m</td><td><b>found</b></td><td>12 of 12</td></tr><tr><td>Hebron</td><td>C-NLOPB</td><td>57&nbsp;m</td><td><b>found</b></td><td>12 of 12</td></tr><tr><td>Terra Nova FPSO</td><td>C-NLOPB</td><td>134&nbsp;m</td><td><b>found</b></td><td>12 of 12</td></tr><tr><td>SeaRose FPSO</td><td>C-NLOPB</td><td>3,673&nbsp;m</td><td><b>not found</b></td><td>0 of 12</td></tr><tr><td>West White Rose (installed 2025)</td><td>NL government</td><td>78&nbsp;m</td><td><b>found</b></td><td>12 of 12</td></tr></tbody></table></div>
+  <p><b>3 of 4</b> listed installations were found, and West White Rose, which the regulator's layer does not list yet, was found too.
+  The map has no other spots. On the six later passes, 27% of CFAR detections fall on a spot, which is what the map would take off a dark list.</p>
+  <figure class="wide"><img src="img/grand_banks_whiterose.png" alt="Left: the Jeanne d'Arc Basin with CFAR detections, map spots on Hibernia, Hebron, Terra Nova and West White Rose. Right: SeaRose's radar returns cluster 2 km south of its listed point, on its independent positions" loading="lazy">
+  <figcaption>Left: map spots (blue) against the listed installations (red, 500&nbsp;m). Right: SeaRose's returns on all 12 passes (orange) sit beside two independent
+  published positions (green), 2.0&nbsp;km south of the point on the regulator's layer.</figcaption></figure>
+  <p><b>Why SeaRose was missed (looked at afterwards).</b> It is there: a 238&nbsp;m return appears on 12 of 12 passes,
+  61&nbsp;m from Wikipedia's position for the field and 209&nbsp;m from the World Ports Directory's,
+  but 1,999&nbsp;m from the regulator's point, which agrees on longitude and differs by about 1′05″ of latitude. It also weathervanes on its turret:
+  its return moves up to 382&nbsp;m between passes, more than the map's 100&nbsp;m recurrence radius. Rebuilt with a 300&nbsp;m radius (about one hull length), the map puts a spot
+  40&nbsp;m from SeaRose and adds no false spot, but that radius was chosen after seeing this data, so it is the design for the next test, not a result.
+  Two lessons: size the recurrence radius to the largest swing (a moored FPSO), and treat a published position as something to check.</p>
 </section>
 
 <section>
