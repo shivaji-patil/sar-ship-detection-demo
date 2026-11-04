@@ -102,6 +102,7 @@
   fitted on 339 matched ships in the training passes. The long axis allows for the azimuth shift of a moving ship (equivalent to 8&nbsp;kn toward the radar).
   On passes it was not fitted on, it contains 90% of AIS positions on the locked set.</p>
   <p class='small'><b>Scored twice, same detector.</b> The first scoring of the locked set exposed a fault in the truth, not the detector: AIS had been extracted only inside each area's box, so a ship that had just left the box stayed in the truth at its last fix and counted as a miss. AIS is now extracted 0.1° beyond the box; the truth was rebuilt for every set and every result re-run, with no detector setting changed. The first scoring gave Pd 0.58 at k&nbsp;=&nbsp;5 on the locked set (342 ships, including the stale ones); it is kept alongside this one.</p>
+  <p><b>How many unmatched targets are vessels?</b> A stratified random sample of 128 of the 402 unmatched targets was labelled from the radar chips alone, without AIS, by Claude, an AI model rather than a trained analyst. Of those judged either way, about 64% look like vessels (55%–73%); 47 were too small or faint to call, and counting all of those either way puts the share between 38% and 91%. So the false-alarm rate likely includes many real vessels without AIS. A trained analyst's review would firm this up.</p>
   <p class="small">Truth is AIS: vessels without it count as false alarms, so the false-alarm rate is an upper bound. Breakdowns by area, wind, wave height and incidence angle
   (nearest NOAA buoy within 60&nbsp;km) are in the repository's KPI report. The hull axis has a 180° ambiguity: the radar gives orientation, not direction of travel.</p>
 </section>
@@ -122,6 +123,40 @@
   its operating threshold, set on the held-out passes to match production CFAR's false-alarm rate there, gave 15.8 false alarms per 1,000&nbsp;km² on the test passes against production's 13.1.
   CFAR stays in production; the learned model is registered as version 5 for the next round.
   The labels are AIS, so vessels without AIS count as false alarms in training as in scoring; 324 positive examples is a small training set.</p>
+</section>
+
+<section>
+  <h2>A second learned detector, and the pre-registered test it failed</h2>
+  <p>Round two keeps the two-stage design but changes the network and its labels. CFAR proposes candidates at k&nbsp;=&nbsp;4; a ResNet-50 pre-trained on Sentinel-1
+  (SSL4EO-S12 SoftCon), fine-tuned on co-pol and cross-pol chips, decides ship or not; five seeds are averaged (registry version 6). It was trained on
+  14 and tuned on 8 development passes from 2024 in three other areas (San Francisco Bay, New York–New Jersey, Hampton Roads), split by date.</p>
+  <p><b>What CFAR's false alarms are</b> (294 on the development passes, sorted by rule and checked on chips): about 40% are bright compact targets without AIS, probably vessels;
+  27% recur on training passes (fixed objects); 19% are shore returns; 10% weak clutter; ambiguities about 1%.
+  The classifier learns AIS-matched ships against the recurring, shore, clutter and ambiguity candidates; the probable vessels without AIS are left out. These are pseudo-labels:
+  a recurring return can be a boat on a regular mooring.</p>
+  <p><b>Development comparison.</b> On the 8 development validation passes, at its frozen threshold, it finds 0.72 of the ships at
+  10.8 false alarms per 1,000&nbsp;km², against 0.63 for production CFAR at its best threshold under
+  13 and 0.64 for a dual-polarisation YOLO trained on Danish AIS
+  (paired differences +0.095, interval +0.032 to +0.171; +0.079, +0.017 to +0.153).
+  The threshold was chosen on the same passes, so these intervals describe, rather than test.</p>
+  <div class="scroll"><table><thead><tr><th></th><th>v6, test</th><th>CFAR, test</th><th>v6, locked</th><th>CFAR, locked</th></tr></thead><tbody><tr><td>Pd at 1 / 5 / 10 FA per 1,000 km²</td><td>0.43/0.71/0.77</td><td>0.22/0.63/0.77</td><td>0.56/0.78/0.82</td><td>0.62/0.78/0.79</td></tr><tr><td>Pd at the operating point</td><td>0.76</td><td>0.81</td><td>0.79</td><td>0.79</td></tr><tr><td>False alarms per 1,000 km² there</td><td>8.1</td><td>13.1</td><td>5.8</td><td>9.5</td></tr><tr><td>Pd, boats under 25 m</td><td>0.28</td><td>0.36</td><td>0.28</td><td>0.24</td></tr></tbody></table></div>
+  <p><b>Test passes.</b> It passes the promotion gate, including the equal-recall rule added after the fresh test below (8.1 against 9.2 false alarms per 1,000&nbsp;km²).
+  <b>Locked passes.</b> Both detectors find 88 of 112 ships. Against production k&nbsp;=&nbsp;5, v6 has 38% fewer false alarms
+  (pass bootstrap 13% to 61%), but all of it comes from Massachusetts Bay, and against CFAR re-thresholded to find the same ships
+  the cut is only 15% (-18% to 46%). On the locked passes, v6 shows <b>no demonstrated advantage</b> over CFAR set to the same recall.</p>
+  <div class="scroll"><table><thead><tr><th>Locked area</th><th>v6 ships / false alarms</th><th>CFAR k&nbsp;=&nbsp;5</th><th>CFAR at equal recall (k)</th><th>Exposure</th></tr></thead><tbody><tr><td>Massachusetts Bay</td><td>39 / 22</td><td>40 / 77</td><td>6.75: 39 / 16</td><td>unseen water</td></tr><tr><td>Chesapeake entrance</td><td>49 / 65</td><td>48 / 64</td><td>4.75: 49 / 81</td><td>shares about 22 km² with a development area</td></tr><tr><td>Both</td><td>88 / 87</td><td>88 / 141</td><td>5.25: 88 / 102</td><td></td></tr></tbody></table></div>
+  <p><b>A pre-registered fresh test.</b> To settle it, three new areas (Delaware Bay entrance, Charleston approaches, Columbia River entrance), the pass rule and three endpoints
+  were committed, and both detectors frozen by fingerprint, before any of their data was fetched; the 36 passes were then scored once.</p>
+  <div class="scroll"><table><thead><tr><th>Fresh test, 36 passes, 105 ships</th><th>v6</th><th>CFAR</th></tr></thead><tbody><tr><td>Pd at 1 / 5 / 10 FA per 1,000 km²</td><td>0.67 / 0.76 / 0.79</td><td>0.68 / 0.78 / 0.80</td></tr><tr><td>At the operating point: Pd, FA per 1,000 km²</td><td>0.78, 7.7</td><td>0.81, 17.1 (k&nbsp;=&nbsp;5)</td></tr><tr><td>False alarms at equal recall</td><td>135</td><td><b>85</b> (k&nbsp;=&nbsp;6.5)</td></tr></tbody></table></div>
+  <p>Pd at 5&nbsp;FA: -0.019 (interval -0.053 to +0.021), no difference. False alarms against CFAR at equal recall:
+  59% <b>more</b> (interval for the cut -116% to -15%). Under the rule fixed in advance, <b>v6 is worse on fresh water</b>.
+  Its edge over production came from production's k&nbsp;=&nbsp;5 being a loose operating point for much of this water, not from the classifier: CFAR alone, set to the same recall, does better.</p>
+  <p><b>What changed.</b> v6 is not promoted. The gate gained a fifth rule: a learned candidate's false alarms may not exceed CFAR re-thresholded to find as many ships on the same passes.
+  On the test passes v6 still passes it, so only the fresh test caught this; its verdict is recorded on v6 in the registry. Next: a fixed CFAR threshold of its own deserves the same kind of test.</p>
+  <p class="small">Only Massachusetts Bay is unseen water: the Chesapeake entrance shares about 22&nbsp;km² of scored water with Hampton Roads, and New York Lower Bay is left out because it overlaps the
+  New York–New Jersey development area (one of its scenes is a development pass). Equal-recall CFAR thresholds were picked after the fact, for reference.
+  The test passes were looked at by this line of work several times on 3&nbsp;Nov: once by the Danish YOLO, once by an earlier classifier built on stale labels, and twice by this one
+  (the first with the wrong truth domain). Only the last is reported; the full chronology is in the repository README.</p>
 </section>
 
 <section>
@@ -219,10 +254,10 @@
   (a wider mask must not buy Pd by testing less), and Pd by chance must stay under 0.06.
   Promotion writes the production settings to a file the live service reads, and every processed pass records the version that produced it.
   The decisions so far, replayed through the gate:</p>
-  <div class='scroll'><table><thead><tr><th>Version</th><th>Detector</th><th>Coastal buffer</th><th>Pd at 5 FA</th><th>FA at k&nbsp;=&nbsp;5</th><th>Ships scored</th><th>Pd by chance</th><th>Decision</th><th>Gate</th></tr></thead><tbody><tr><td>1</td><td>CFAR</td><td>40&nbsp;m</td><td>0.54</td><td>48.7</td><td>272</td><td>0.08</td><td>superseded</td><td class='small why'>first production version</td></tr><tr><td>2</td><td>CFAR</td><td>150&nbsp;m</td><td>0.63</td><td>13.1</td><td>226</td><td>0.04</td><td><b>production</b></td><td class='small why'>scores 83% of the ships (rule: at least 95%); approved anyway: the ships no longer scored lie within 150 m of the coast, where most unmatched targets at 40 m were docks and shore returns</td></tr><tr><td>3</td><td>CFAR</td><td>75&nbsp;m</td><td>0.64</td><td>20.1</td><td>244</td><td>0.04</td><td>rejected</td><td class='small why'>false alarms +53% (rule: at most +10%)</td></tr><tr><td>4</td><td>CFAR</td><td>300&nbsp;m</td><td>0.66</td><td>10.6</td><td>201</td><td>0.03</td><td>rejected</td><td class='small why'>scores 89% of the ships (rule: at least 95%)</td></tr><tr><td>5</td><td>learned</td><td>150&nbsp;m</td><td>0.65</td><td>16.0</td><td>226</td><td>0.04</td><td>rejected</td><td class='small why'>false alarms +22% (rule: at most +10%); the live service cannot run this detector type yet</td></tr></tbody></table></div>
+  <div class='scroll'><table><thead><tr><th>Version</th><th>Detector</th><th>Coastal buffer</th><th>Pd at 5 FA</th><th>FA at operating point</th><th>Ships scored</th><th>Pd by chance</th><th>Decision</th><th>Gate</th></tr></thead><tbody><tr><td>1</td><td>CFAR</td><td>40&nbsp;m</td><td>0.54</td><td>48.7</td><td>272</td><td>0.08</td><td>superseded</td><td class='small why'>first production version</td></tr><tr><td>2</td><td>CFAR</td><td>150&nbsp;m</td><td>0.63</td><td>13.1</td><td>226</td><td>0.04</td><td><b>production</b></td><td class='small why'>scores 83% of the ships (rule: at least 95%); approved anyway: the ships no longer scored lie within 150 m of the coast, where most unmatched targets at 40 m were docks and shore returns</td></tr><tr><td>3</td><td>CFAR</td><td>75&nbsp;m</td><td>0.64</td><td>20.1</td><td>244</td><td>0.04</td><td>rejected</td><td class='small why'>false alarms +53% (rule: at most +10%)</td></tr><tr><td>4</td><td>CFAR</td><td>300&nbsp;m</td><td>0.66</td><td>10.6</td><td>201</td><td>0.03</td><td>rejected</td><td class='small why'>scores 89% of the ships (rule: at least 95%)</td></tr><tr><td>5</td><td>learned</td><td>150&nbsp;m</td><td>0.65</td><td>16.0</td><td>226</td><td>0.04</td><td>rejected</td><td class='small why'>false alarms +22% (rule: at most +10%); the live service cannot run this detector type yet</td></tr><tr><td>6</td><td>learned</td><td>150&nbsp;m</td><td>0.71</td><td>8.1</td><td>226</td><td>0.03</td><td>failed fresh test</td><td class='small why'>passes every rule, including equal recall; the live service cannot run this detector type yet; pre-registered fresh test: worse than CFAR at equal recall</td></tr></tbody></table></div>
   <p class="small">Unit tests, including the gate and a registry round trip, run in CI on every change (Python 3.11 and 3.12).
   The full validation needs the Sentinel-1 cases and runs locally before a candidate is registered.
-  CFAR has no weights to retrain; the same registry and gate are where a learned detector would be versioned, retrained and promoted.</p>
+  The learned detectors are versioned in the same registry and judged by the same gate, which since 4&nbsp;Nov also compares a learned candidate with CFAR re-thresholded to the same recall; promoting one also needs the live service to run it.</p>
 </section>
 
 <section>
