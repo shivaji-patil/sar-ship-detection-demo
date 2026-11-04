@@ -48,3 +48,5 @@ details { margin:12px 0; } summary { cursor:pointer; color:var(--accent); }
 .sw { display:inline-block; width:12px; height:12px; border-radius:50%; border:2px solid var(--c); vertical-align:-1px; }
 .sources ul { font-size:14px; color:var(--muted); }
 footer { padding:22px 0 36px; color:var(--muted); font-size:14px; }
+section.summary { background:var(--soft); border:1px solid var(--line); border-radius:10px; padding:4px 22px 10px; margin-top:28px; }
+section.summary li { margin:8px 0; }
