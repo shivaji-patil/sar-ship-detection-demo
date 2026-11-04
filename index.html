@@ -35,11 +35,13 @@
     <li><b>A learned detector was not good enough, and the gate was fixed.</b> A Sentinel-1 ResNet-50 classifier passed the promotion gate, but on fresh water it produced
     59% more false alarms than classical CFAR set to find as many ships. It was not promoted, and the gate gained a rule that would catch it.</li>
     <li><b>A false-alarm budget does not travel.</b> A CFAR threshold set to give 10 false alarms per 1,000&nbsp;km² on 129 passes gave 23 in five new areas.
-    The excess was traced to fixed structures, such as gas platforms in Mobile Bay that the federal platform list does not cover.</li>
-    <li><b>The fix held up.</b> A map of recurring unexplained returns, built from each region's own first six months, cut false alarms on the dark list by 41%
-    in the next six months of five new areas and raised Pd at 5 false alarms per 1,000&nbsp;km² by +0.08 (+0.05 to +0.12),
-    without hiding any AIS-tracked ship.</li>
-    <li><b>Reproducible.</b> Every number on this page is read from a results file written by a script in the repository; the code has 104 tests, and every detector
+    Most of the excess sits on returns that recur from pass to pass: in Mobile Bay, 87% of false alarms fell on 32 recurring spots,
+    only 4 of them on the federal platform list.</li>
+    <li><b>The fix held up.</b> A map of recurring unexplained returns, built from each region's own first six months, cut false alarms on the dark list by 34%
+    beyond the federal platform list in the next six months of five new areas, and raised Pd at 5 false alarms per 1,000&nbsp;km² by +0.05
+    (+0.03 to +0.09), without hiding any AIS-tracked ship. The pre-registered scoring, which left that list out by mistake, gave
+    41% and +0.08.</li>
+    <li><b>Reproducible.</b> Every number on this page is read from a results file written by a script in the repository; the code has 109 tests, and every detector
     version and gate decision is in an MLflow registry.</li>
   </ul>
 </section>
@@ -186,13 +188,17 @@
   <p><b>The budget does not transfer:</b> at the fixed threshold the rate is 22.8 per 1,000&nbsp;km² (21.3 to 24.4), more than twice the budget, and
   58 in Mobile Bay. <b>The clutter rule does not help:</b> it is no more even (+0.061, -0.018 to +0.109) and costs Pd against
   fixed-threshold CFAR at the same false-alarm rate (-0.047, -0.076 to -0.012), so it is rejected.
-  A false-alarm budget set in one set of regions should not be trusted in a new one without a short local calibration. The excess looks local: Mobile Bay has many gas
-  platforms in Alabama state waters, which the federal platform list used for exclusion does not cover. That is the next thing to check; it is not yet tested.</p>
+  A false-alarm budget set in one set of regions should not be trusted in a new one without a short local calibration.</p>
+  <p><b>Correction, found after publishing.</b> This test was scored without production's platform exclusion: its scorer assumed none of the five areas has federal (BOEM)
+  platforms, but 7 stand in the Mobile Bay box. With them left out, as production does, the rate at the fixed threshold is 20.6
+  (19.0 to 22.2) and 50 in Mobile Bay, so both readings stand. Of Mobile Bay's 32 recurring
+  false-alarm spots, 4 are BOEM platforms, 7 more are offshore platforms mapped only in OpenStreetMap, and
+  21 are neither (<a href="https://github.com/shivaji-patil/maritime-target-correlation/blob/main/results/platform_sensitivity.md">platform check</a>).</p>
 </section>
 
 <section>
   <h2>A structure map from each region's own history</h2>
-  <p>In Mobile Bay, 91% of the false alarms sat on 30 spots that recurred from pass to pass; ten of them are mapped offshore platforms. So the next test kept CFAR as it is and
+  <p>In Mobile Bay, 87% of the false alarms sat on 32 spots that recurred from pass to pass; 11 of them are mapped offshore platforms. So the next test kept CFAR as it is and
   added a map: a spot goes on it when returns that no AIS ship explains recur within 100&nbsp;m on at least three of a region's January–June passes. On later passes, unexplained
   returns near a spot leave the dark list; anything a live AIS ship explains is kept. The rule, five new areas and the success criteria were committed before any data was fetched,
   and the 30 July–December passes (281 AIS ships) were scored once.</p>
@@ -200,9 +206,17 @@
   <tbody><tr><td>Honolulu</td><td>30</td><td>3</td><td>45.1</td><td><b>34.7</b></td></tr><tr><td>Long Island Sound</td><td>17</td><td>1</td><td>5.7</td><td><b>4.0</b></td></tr><tr><td>Narragansett Bay</td><td>160</td><td>0</td><td>14.9</td><td><b>14.9</b></td></tr><tr><td>Sabine Pass</td><td>57</td><td>8</td><td>27.2</td><td><b>9.9</b></td></tr><tr><td>Wilmington</td><td>17</td><td>10</td><td>26.7</td><td><b>12.4</b></td></tr></tbody></table></div>
   <p>False alarms at production's threshold fall 41% (19.7 to 11.5 per 1,000&nbsp;km²; interval 37% to 46%),
   and Pd at 5 false alarms per 1,000&nbsp;km² rises from 0.39 to 0.47 (+0.082, interval +0.053 to +0.119).
-  No AIS ship in the test passes sat at a mapped spot (0% exposure, limit 5%), so none would have been hidden had it been dark. Under the rule fixed in advance this is an
+  No AIS ship in the test passes sat at a mapped spot (0 of 281; limit 5%), so none would have been hidden had it been dark. Under the rule fixed in advance this is an
   <b>improvement</b>. Two passes had no AIS in the NOAA files; they were kept as the rule required, which if anything understates the gain. The cost is a dark vessel moored at a
   mapped structure, which AIS truth cannot measure; a rehearsal on Mobile Bay put the exposure at about 7%, so the map suits areas with many fixed structures best when an analyst reviews its spots.</p>
+  <p><b>Correction, found after publishing.</b> The scorer left out production's platform exclusion, assuming these areas have no federal (BOEM) platforms; 8 stand in the
+  Sabine Pass box, and 4 of Sabine's 8 spots are those platforms (within 34&nbsp;m), which the map found without the list. Scored again with the
+  exclusion on both arms (post hoc, the published result reproduced exactly first): false alarms fall 34% (17.6 to
+  11.5; 30% to 39%), Pd at 5 false alarms per 1,000&nbsp;km² rises +0.046
+  (+0.027 to +0.094), Sabine Pass falls from 17.8 to 9.9
+  (not from 27.2), and no AIS ship is exposed: the reading is unchanged, at about half the gain. Without Sabine Pass the gain is
+  +0.036. The intervals resample passes within these five areas, so they do not cover variation between areas
+  (<a href="https://github.com/shivaji-patil/maritime-target-correlation/blob/main/results/platform_sensitivity.md">platform check</a>).</p>
 </section>
 
 <section>
