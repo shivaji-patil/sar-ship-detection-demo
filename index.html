@@ -160,6 +160,20 @@
 </section>
 
 <section>
+  <h2>Can an operator trust a false-alarm budget?</h2>
+  <p>CFAR is meant to hold a constant false-alarm rate, but on the 129 passes used so far its rate at k&nbsp;=&nbsp;5 varies twenty-fold between areas. Two ways to hold a budget of
+  10 false alarms per 1,000&nbsp;km² were fitted on those passes and frozen: one fixed threshold (k&nbsp;=&nbsp;6), and a threshold set per scene from the scene's own
+  clutter (no AIS needed). With hindsight, per-scene thresholds could reach Pd 0.81 at the budget against 0.75 for a fixed one, so there is room to gain.</p>
+  <p>Both were scored once on 60 pre-registered passes in five new areas (254 AIS ships):</p>
+  <div class="scroll"><table><thead><tr><th>60 fresh passes</th><th>Pd</th><th>FA per 1,000&nbsp;km²</th><th>Casco Bay</th><th>Mobile Bay</th><th>San Diego</th><th>Savannah</th><th>Tampa Bay</th></tr></thead><tbody><tr><td>Fixed k&nbsp;=&nbsp;6</td><td>0.56</td><td>22.8</td><td>13.6</td><td>58.3</td><td>20.2</td><td>8.0</td><td>4.8</td></tr><tr><td>Adaptive</td><td>0.54</td><td>28.2</td><td>21.9</td><td>53.2</td><td>20.7</td><td>21.9</td><td>16.1</td></tr><tr><td>Production k&nbsp;=&nbsp;5</td><td>0.63</td><td>34.9</td><td>27.8</td><td>65.0</td><td>53.6</td><td>21.0</td><td>12.0</td></tr></tbody></table></div>
+  <p><b>The budget does not transfer:</b> at the fixed threshold the rate is 22.8 per 1,000&nbsp;km² (21.3 to 24.4), more than twice the budget, and
+  58 in Mobile Bay. <b>The clutter rule does not help:</b> it is no more even (+0.061, -0.018 to +0.109) and costs Pd against
+  fixed-threshold CFAR at the same false-alarm rate (-0.047, -0.076 to -0.012), so it is rejected.
+  A false-alarm budget set in one set of regions should not be trusted in a new one without a short local calibration. The excess looks local: Mobile Bay has many gas
+  platforms in Alabama state waters, which the federal platform list used for exclusion does not cover. That is the next thing to check; it is not yet tested.</p>
+</section>
+
+<section>
   <h2>Quality-control images</h2>
   <p>Cross-polarised backscatter with land dimmed. Rings: <span class="sw" style="--c:#3ecf8e"></span> matched to AIS,
   <span class="sw" style="--c:#ff4d4f"></span> no AIS match (dark candidate), <span class="sw" style="--c:#4dabf7"></span> at a BOEM platform.
