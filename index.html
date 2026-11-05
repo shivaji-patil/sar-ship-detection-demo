@@ -24,7 +24,7 @@
     </div>
     <p class="note">Baseline: classical CFAR. Truth: AIS, which misses vessels without transponders, so false-alarm figures are upper bounds.</p>
     <p class="cta"><a href="brief.pdf">Two-page brief (PDF)</a> · <a href="note.pdf">Technical note: five pre-registered tests (PDF)</a></p>
-    <p class="note">Last updated 5 Nov 2026, 05:06 UTC (5 Nov, 01:36 NST).</p>
+    <p class="note">Last updated <mark class="ts">5 Nov 2026, 12:46 UTC (5 Nov, 09:16 NST)</mark>.</p>
   </div>
 </header>
 <main class="wrap">
@@ -35,7 +35,8 @@
     any data was fetched and pushed to GitHub before scoring (the last two before fetching too), and each was scored once. Results are reported whichever way they came out.</li>
     <li><b>A learned detector was not good enough, and the gate was fixed.</b> A Sentinel-1 ResNet-50 classifier passed the promotion gate, but on fresh water it produced
     59% more false alarms than classical CFAR set to find as many ships. It was not promoted, and the gate gained a rule that would catch it.</li>
-    <li><b>A false-alarm budget does not travel.</b> A CFAR threshold set to give 10 false alarms per 1,000&nbsp;km² on 129 passes gave 23 in five new areas.
+    <li><b>A false-alarm budget does not travel.</b> A CFAR threshold set to give 10 false alarms per 1,000&nbsp;km² on 129 passes gave 21 in five new areas
+    (23 as first scored, before the federal platform list was applied).
     Most of the excess sits on returns that recur from pass to pass: in Mobile Bay, 87% of false alarms fell on 32 recurring spots,
     only 4 of them on the federal platform list.</li>
     <li><b>The fix held up.</b> A map of recurring unexplained returns, built from each region's own first six months, cut false alarms on the dark list by 34%
@@ -48,7 +49,7 @@
     <li><b>On Canadian water.</b> Over the Grand Banks oil fields, with no AIS and no list of structures, the same map found 3 of the
     regulator's 4 production installations and the new West White Rose platform, with no false spot. The fourth, SeaRose, appears on every pass
     2.0&nbsp;km from its listed position, and swings too far for the map's 100&nbsp;m rule.</li>
-    <li><b>Reproducible.</b> Every number on this page is read from a results file written by a script in the repository; the code has 129 tests, and every detector
+    <li><b>Reproducible.</b> Every result on this page is read from a results file written by a script in the repository; the code has 129 tests, and every detector
     version and gate decision is in an MLflow registry.</li>
   </ul>
 </section>
@@ -281,7 +282,7 @@
 
 <section>
   <h2>Fourth pre-registered test: structure-rich new water</h2>
-  <p class="note">Rules, areas and pass list fixed 5 Nov 2026, 00:21 UTC (4 Nov, 20:51 NST) and pushed to GitHub (commit <code>82f9dbb</code>, private repository) before any of the radar or AIS data was fetched. Scored once, 5 Nov 2026, 01:51 UTC (4 Nov, 22:21 NST) (commit <code>e0a83ab</code>).</p>
+  <p class="note">Rules, areas and pass list fixed <mark class="ts">5 Nov 2026, 00:21 UTC (4 Nov, 20:51 NST)</mark> and pushed to GitHub (commit <code>82f9dbb</code>, private repository) before any of the radar or AIS data was fetched. Scored once, <mark class="ts">5 Nov 2026, 01:51 UTC (4 Nov, 22:21 NST)</mark> (commit <code>e0a83ab</code>).</p>
   <p>Five new areas chosen for their structures: four off Louisiana with 56 standing federal platforms, and the
   Santa Barbara Channel, whose platforms are not on the federal Gulf list the pipeline uses, so the map has to find them itself. The map drops spots where an AIS ship sat;
   the alongside flag runs at GROW&nbsp;=&nbsp;1.5, both fixed beforehand. 30 July–December passes, 129 AIS ships, 12,306&nbsp;km².</p>
@@ -299,7 +300,7 @@
 
 <section>
   <h2>Fifth pre-registered test: a calibrated flag in dense platform fields</h2>
-  <p class="note">Rules, areas and pass list fixed 5 Nov 2026, 03:57 UTC (5 Nov, 00:27 NST) and pushed to GitHub (commit <code>27dc282</code>, private repository) before any of the radar or AIS data was fetched. Scored once, 5 Nov 2026, 05:03 UTC (5 Nov, 01:33 NST) (commit <code>de50f3b</code>).</p>
+  <p class="note">Rules, areas and pass list fixed <mark class="ts">5 Nov 2026, 03:57 UTC (5 Nov, 00:27 NST)</mark> and pushed to GitHub (commit <code>27dc282</code>, private repository) before any of the radar or AIS data was fetched. Scored once, <mark class="ts">5 Nov 2026, 05:03 UTC (5 Nov, 01:33 NST)</mark> (commit <code>de50f3b</code>).</p>
   <p>The fourth test's flag failed on Main Pass's dense platform field, so the flag was recalibrated. In each area, structures with a neighbour within 500&nbsp;m and isolated
   ones each get their own threshold, or are switched off, chosen from the area's own January–June passes so the flag adds at most 1 false alarm per 1,000&nbsp;km².
   On the ten areas used before, this met both bars, narrowly. The test: the five densest federal platform fields in a scan of the Gulf.</p>
