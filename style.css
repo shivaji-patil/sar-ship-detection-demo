@@ -80,6 +80,44 @@ section.summary code { background:var(--bg); }
 figure.wide > img[src$=".svg"] { max-width:760px; }
 figure img:not([src^="img/qc_"]):not([src^="img/live_"]) { filter:brightness(.94); }
 mark.ts { white-space:nowrap; }
-figure.wide:has(> img[src$="arch_pipeline.png"]) { overflow-x:auto; -webkit-overflow-scrolling:touch; }
-figure.wide > img[src$="arch_pipeline.png"] { width:auto; max-width:none; height:240px; }
 @media (max-width:640px) { section.summary { padding:4px 14px 10px; } section.summary ul { padding-left:18px; } }
+
+/* Pipeline diagram (inline SVG from pipeline_svg()): the wide snake from 1000 px, where its smallest text is still about
+   12 px; one column below that, phones and upright tablets alike. */
+figure.pipe { position:relative; margin:18px 0 18px; }
+figure.pipe svg { display:block; width:100%; height:auto; overflow:visible; }
+figure.pipe .pipe-m { display:none; max-width:440px; margin:0 auto; }
+@media (max-width:999.98px) { figure.pipe .pipe-d { display:none; } figure.pipe .pipe-m { display:block; } }
+/* On wide screens the snake uses the side margins too (up to 1240 px, 32 px clear of each window edge), centred on the
+   text column: its text then matches the cards below it. */
+@media (min-width:1180px) { figure.pipe .pipe-d { width:min(1240px, calc(100vw - 64px)); max-width:none;
+  margin-left:calc((100% - min(1240px, calc(100vw - 64px))) / 2); } }
+.pipe-legend { fill:var(--bg); }
+/* Data flowing along every connector: one 12 px dash cycle per second. */
+.pipe-flow { stroke-dasharray:6 6; animation:pipe-flow 1s linear infinite; }
+@keyframes pipe-flow { to { stroke-dashoffset:-12; } }
+/* A highlight walks through the stages, 0.8 s each (--i is the stage's turn), then pauses: 11 turns + 1.2 s = 10 s. */
+.pipe-box { fill:#221f22; stroke:#5b595c; stroke-width:1.5; animation:pipe-step 10s ease-in-out infinite; animation-delay:calc(var(--i) * .8s); }
+@keyframes pipe-step {
+  0%, 8.5%, 100% { fill:#221f22; stroke:#5b595c; stroke-width:1.5; }
+  1.5%, 7% { fill:#363337; stroke:#ffd866; stroke-width:2; } }
+/* Stop control without script (WCAG 2.2.2): a visually hidden checkbox before the SVGs (kept at the bottom of the figure,
+   so focusing it scrolls the caption into view), its label in the caption with a small box that fills when checked.
+   Checked, the highlight stops, the moving dashes go and the connectors are drawn solid. */
+.pipe-still { position:absolute; bottom:0; left:0; width:1px; height:1px; margin:0; opacity:0; }
+.pipe-still-l { display:inline-block; margin-left:.5em; font-size:13px; line-height:1.6; color:var(--muted); cursor:pointer;
+  border:1px solid var(--line-strong); border-radius:6px; padding:0 8px; white-space:nowrap; }
+.pipe-still-l::before { content:""; display:inline-block; width:.7em; height:.7em; margin-right:.45em; vertical-align:-.05em;
+  border:1.5px solid currentColor; border-radius:2px; }
+.pipe-still-l:hover { color:var(--ink); }
+.pipe-still:focus-visible ~ figcaption .pipe-still-l { outline:2px solid var(--yellow); outline-offset:2px; }
+.pipe-still:checked ~ figcaption .pipe-still-l { color:var(--ink); border-color:var(--yellow); }
+.pipe-still:checked ~ figcaption .pipe-still-l::before { background:var(--yellow); border-color:var(--yellow); }
+.pipe-still:checked ~ svg .pipe-box { animation:none; }
+.pipe-still:checked ~ svg .pipe-flow { display:none; }
+.pipe-still:checked ~ svg .pipe-base { stroke-opacity:1; }
+/* Reduced motion: nothing moves, the connectors are solid (frozen dashes would read as optional links, like the dashed
+   'Pass watcher' group), and the stop control is not needed. */
+@media (prefers-reduced-motion: reduce) {
+  .pipe-box { animation:none; } .pipe-flow { display:none; } .pipe-base { stroke-opacity:1; }
+  .pipe-still, .pipe-still-l { display:none; } }
