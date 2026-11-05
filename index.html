@@ -3,6 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#19181a">
 <title>SAR Ship Detection</title>
 <meta name="description" content="Sentinel-1 ship detection correlated with AIS, built as a scheduled service and validated on 2024 NOAA AIS.">
 <link rel="stylesheet" href="style.css">
@@ -14,7 +16,7 @@
     <h1>Ships in Sentinel-1 radar, checked against AIS</h1>
     <p class="lede plain">Free satellite radar sees most coastlines every few days, through cloud and darkness. This service is built to find the ships in each new image,
     check every one against the AIS position broadcasts ships send, and flag the ones no broadcast accounts for, by itself after each satellite pass.
-    It has processed one live pass, Vancouver harbour on 22 October 2026 (below), and is not running now.</p>
+    Its first live pass was Vancouver harbour on 22 October 2026 (below); it was restarted on 5 November 2026 after its timers were lost.</p>
     <p class="lede">Scored the way an operator would use it: probability of detection at a fixed false-alarm rate,
     on 12 passes over US waters where a full year of AIS is public.</p>
     <div class="kpis">
@@ -25,7 +27,7 @@
     </div>
     <p class="note">Baseline: classical CFAR. Truth: AIS, which misses vessels without transponders, so false-alarm figures are upper bounds.</p>
     <p class="cta"><a href="brief.pdf">Two-page brief (PDF)</a> <a href="note.pdf">Technical note: five pre-registered tests (PDF)</a> <a href="https://github.com/shivaji-patil/maritime-target-correlation">Code on GitHub</a></p>
-    <p class="note">Last updated <mark class="ts">5 Nov 2026, 17:31 UTC (5 Nov, 14:01 NST)</mark>.</p>
+    <p class="note">Last updated <mark class="ts">5 Nov 2026, 18:47 UTC (5 Nov, 15:17 NST)</mark>.</p>
   </div>
 </header>
 <main class="wrap">
@@ -70,7 +72,7 @@
   </div>
   <p class="small">A target with no AIS match is not necessarily a vessel hiding: it can be a boat too small to need AIS, a buoy, a structure missing from the map, or a false alarm.
   On the 2024 passes, where every detection was scored against NOAA AIS, the same setting gave 13 unmatched targets per 1,000&nbsp;km²; here it is 77, in a busy harbour.
-  This is the only live pass processed so far; the service is not running now (see Live operation below).</p>
+  The service stopped after this pass when its timers were lost and was restarted on 5 November 2026 (see Live operation below).</p>
 </section>
 
 
@@ -406,9 +408,9 @@
 <section>
   <h2>Live operation</h2>
   <p>The same code is built to run as a service for Vancouver and St. John's harbours. Timers record AIS around each pass, and a processor checks every 6&nbsp;hours for newly published scenes.
-  For each pass it writes products, alerts and a run-log line with the time from sensing to report. It processed one live pass, Vancouver on 22 October 2026 (above),
-  and is not running now. AIS was recorded around two later passes, but neither was processed.</p>
-  <p>The passes it had scheduled next:</p><ul><li><b>Vancouver harbour</b>: Sat 24 Oct 23:32 NDT (25 Oct 02:02 UTC), Sentinel-1C, relative orbit 137: AIS recorded, not processed</li><li><b>St. John&#x27;s harbour</b>: Mon 26 Oct 07:11 NDT (26 Oct 09:41 UTC), Sentinel-1C, relative orbit 156: AIS recorded, not processed</li><li><b>St. John&#x27;s harbour</b>: Tue 27 Oct 07:03 NDT (27 Oct 09:33 UTC), Sentinel-1D, relative orbit 83: nothing recorded</li><li><b>St. John&#x27;s harbour</b>: Wed 28 Oct 18:51 NDT (28 Oct 21:21 UTC), Sentinel-1D, relative orbit 105: nothing recorded</li></ul>
+  For each pass it writes products, alerts and a run-log line with the time from sensing to report. It processed its first live pass, Vancouver on 22 October 2026 (above), then stopped when its timers
+  were lost. It was restarted on 5 November 2026 with a planner timer that recreates them at every start; the St. John's pass of 26 October, recorded before it stopped, was processed then.</p>
+  <p>The passes it had scheduled next:</p><ul><li><b>Vancouver harbour</b>: Thu 05 Nov 22:32 NDT (06 Nov 02:02 UTC), Sentinel-1C, relative orbit 137: nothing recorded</li><li><b>St. John&#x27;s harbour</b>: Sat 07 Nov 06:11 NDT (07 Nov 09:41 UTC), Sentinel-1C, relative orbit 156: nothing recorded</li><li><b>St. John&#x27;s harbour</b>: Sun 08 Nov 06:03 NDT (08 Nov 09:33 UTC), Sentinel-1D, relative orbit 83: nothing recorded</li><li><b>St. John&#x27;s harbour</b>: Mon 09 Nov 17:51 NDT (09 Nov 21:21 UTC), Sentinel-1D, relative orbit 105: nothing recorded</li></ul>
   <p class="small">Latency today is dominated by the data source. Planetary Computer publishes terrain-corrected Sentinel-1 hours to days after sensing.
   For near-real-time use the same pipeline would read Copernicus NRT products or a commercial feed, and the 52&nbsp;s of processing on the live pass, which includes reading the scene, would follow the scene's arrival.</p>
 </section>
@@ -423,7 +425,7 @@
   (a wider mask must not buy Pd by testing less), and Pd by chance must stay under 0.06.
   Promotion writes the production settings to a file the live service reads, and every processed pass records the version that produced it.
   The decisions so far, replayed through the gate:</p>
-  <div class='scroll'><table><thead><tr><th>Version</th><th>Detector</th><th>Coastal buffer</th><th>Pd at 5 FA</th><th>FA at operating point</th><th>Ships scored</th><th>Pd by chance</th><th>Decision</th><th>Gate</th></tr></thead><tbody><tr><td>1</td><td>CFAR</td><td>40&nbsp;m</td><td>0.54</td><td>48.7</td><td>272</td><td>0.08</td><td>superseded</td><td class='small why'>first production version</td></tr><tr><td>2</td><td>CFAR</td><td>150&nbsp;m</td><td>0.63</td><td>13.1</td><td>226</td><td>0.04</td><td><b>production</b></td><td class='small why'>scores 83% of the ships (rule: at least 95%); approved anyway: the ships no longer scored lie within 150 m of the coast, where most unmatched targets at 40 m were docks and shore returns</td></tr><tr><td>3</td><td>CFAR</td><td>75&nbsp;m</td><td>0.64</td><td>20.1</td><td>244</td><td>0.04</td><td>rejected</td><td class='small why'>false alarms +53% (rule: at most +10%)</td></tr><tr><td>4</td><td>CFAR</td><td>300&nbsp;m</td><td>0.66</td><td>10.6</td><td>201</td><td>0.03</td><td>rejected</td><td class='small why'>scores 89% of the ships (rule: at least 95%)</td></tr><tr><td>5</td><td>learned</td><td>150&nbsp;m</td><td>0.65</td><td>16.0</td><td>226</td><td>0.04</td><td>rejected</td><td class='small why'>false alarms +22% (rule: at most +10%); the live service cannot run this detector type yet</td></tr><tr><td>6</td><td>learned</td><td>150&nbsp;m</td><td>0.71</td><td>8.1</td><td>226</td><td>0.03</td><td>failed fresh test</td><td class='small why'>passes every rule, including equal recall; the live service cannot run this detector type yet; pre-registered fresh test: worse than CFAR at equal recall</td></tr></tbody></table></div>
+  <div class='scroll'><table><thead><tr><th>Version</th><th>Detector</th><th>Coastal buffer</th><th>Pd at 5 FA</th><th>FA at operating point</th><th>Ships scored</th><th>Pd by chance</th><th>Decision</th><th>Gate</th></tr></thead><tbody><tr><td>1</td><td>CFAR</td><td>40&nbsp;m</td><td>0.54</td><td>48.7</td><td>272</td><td>0.08</td><td>superseded</td><td class='small why'>first production version</td></tr><tr><td>2</td><td>CFAR</td><td>150&nbsp;m</td><td>0.63</td><td>13.1</td><td>226</td><td>0.04</td><td class='good'><b>production</b></td><td class='small why'>scores 83% of the ships (rule: at least 95%); approved anyway: the ships no longer scored lie within 150 m of the coast, where most unmatched targets at 40 m were docks and shore returns</td></tr><tr><td>3</td><td>CFAR</td><td>75&nbsp;m</td><td>0.64</td><td>20.1</td><td>244</td><td>0.04</td><td class='bad'>rejected</td><td class='small why'>false alarms +53% (rule: at most +10%)</td></tr><tr><td>4</td><td>CFAR</td><td>300&nbsp;m</td><td>0.66</td><td>10.6</td><td>201</td><td>0.03</td><td class='bad'>rejected</td><td class='small why'>scores 89% of the ships (rule: at least 95%)</td></tr><tr><td>5</td><td>learned</td><td>150&nbsp;m</td><td>0.65</td><td>16.0</td><td>226</td><td>0.04</td><td class='bad'>rejected</td><td class='small why'>false alarms +22% (rule: at most +10%); the live service cannot run this detector type yet</td></tr><tr><td>6</td><td>learned</td><td>150&nbsp;m</td><td>0.71</td><td>8.1</td><td>226</td><td>0.03</td><td class='bad'>failed fresh test</td><td class='small why'>passes every rule, including equal recall; the live service cannot run this detector type yet; pre-registered fresh test: worse than CFAR at equal recall</td></tr></tbody></table></div>
   <p class="small">Version 5 is registered from training seed 1 (the best on the held-out passes); the learned-detector section above gives the mean of the three seeds.
   Unit tests, including the gate and a registry round trip, run in CI on every change (Python 3.11 and 3.12).
   The full validation needs the Sentinel-1 cases and runs locally before a candidate is registered.
