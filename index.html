@@ -24,8 +24,8 @@
       <div><b>12</b><span>Sentinel-1 passes, 226 AIS ships, 10,469 km² of open water</span></div>
     </div>
     <p class="note">Baseline: classical CFAR. Truth: AIS, which misses vessels without transponders, so false-alarm figures are upper bounds.</p>
-    <p class="cta"><a href="brief.pdf">Two-page brief (PDF)</a> · <a href="note.pdf">Technical note: five pre-registered tests (PDF)</a></p>
-    <p class="note">Last updated <mark class="ts">5 Nov 2026, 15:56 UTC (5 Nov, 12:26 NST)</mark>.</p>
+    <p class="cta"><a href="brief.pdf">Two-page brief (PDF)</a> <a href="note.pdf">Technical note: five pre-registered tests (PDF)</a> <a href="https://github.com/shivaji-patil/maritime-target-correlation">Code on GitHub</a></p>
+    <p class="note">Last updated <mark class="ts">5 Nov 2026, 17:31 UTC (5 Nov, 14:01 NST)</mark>.</p>
   </div>
 </header>
 <main class="wrap">
@@ -33,7 +33,7 @@
   <h2>In 30 seconds</h2>
   <ul>
     <li><b>Tested the way an operator would need.</b> Five fresh test sets in 23 new US areas: the areas, the pass rule and the success criteria were committed before
-    any data was fetched and pushed to GitHub before scoring (the last two before fetching too), and each was scored once. Results are reported whichever way they came out.</li>
+    any data was fetched and pushed to GitHub before scoring (the last two before fetching too), each on a branch of its own; GitHub's push log for each records when it arrived (<a href="https://github.com/shivaji-patil/maritime-target-correlation/activity?ref=fresh-prereg"><code>fresh-prereg</code></a>, <a href="https://github.com/shivaji-patil/maritime-target-correlation/activity?ref=fresh2-prereg"><code>fresh2-prereg</code></a>, <a href="https://github.com/shivaji-patil/maritime-target-correlation/activity?ref=fresh3-prereg"><code>fresh3-prereg</code></a>, <a href="https://github.com/shivaji-patil/maritime-target-correlation/activity?ref=fresh4-prereg"><code>fresh4-prereg</code></a>, <a href="https://github.com/shivaji-patil/maritime-target-correlation/activity?ref=fresh5-prereg"><code>fresh5-prereg</code></a>). Each was scored once. Results are reported whichever way they came out.</li>
     <li><b>A learned detector was not good enough, and the gate gained a rule.</b> A Sentinel-1 ResNet-50 classifier passed the promotion gate, but on fresh water it produced
     59% more false alarms than classical CFAR set to find as many ships. It was not promoted. The gate gained an equal-recall rule, but the classifier
     still passes it on the original test passes; only the fresh test caught the problem.</li>
@@ -51,9 +51,9 @@
     <li><b>On Canadian water.</b> Over the Grand Banks oil fields, with no AIS and no list of structures, the same map found 3 of the
     regulator's 4 production installations (the pre-registered bar was all four) and the new West White Rose platform, with no other spot.
     The fourth, SeaRose, appears on every pass 2.0&nbsp;km from its listed position, and swings too far for the map's 100&nbsp;m rule.</li>
-    <li><b>Traceable.</b> Every result on this page is read from a results file in the repository; only the list of scheduled live passes comes from a local file. All but the Danish figures (copied from the Danish-waters study, a separate, private
+    <li><b>Traceable.</b> Every result on this page is read from a results file in <a href="https://github.com/shivaji-patil/maritime-target-correlation">the repository</a>; only the list of scheduled live passes comes from a local file. All but the Danish figures (copied from the Danish-waters study, a separate, private
     repository) are computed there by scripts; the learned-detector results also need trained weights that are not included. The code has 132 tests, and every detector
-    version and gate decision is recorded in an MLflow registry (exported to <code>results/mlops.json</code>).</li>
+    version and gate decision is recorded in an MLflow registry (exported to <a href="https://github.com/shivaji-patil/maritime-target-correlation/blob/main/results/mlops.json"><code>results/mlops.json</code></a>).</li>
   </ul>
 </section>
 
@@ -123,7 +123,7 @@
   <p>The 12 test passes above helped choose the coastal buffer, so they are not a clean held-out set. A second set was therefore fixed before any of its data was fetched:
   Massachusetts Bay (Boston approaches), the Chesapeake Bay entrance (Cape Henry approaches) and New York Lower Bay (Ambrose approaches), the first Sentinel-1 scene each month of 2024 that covers the area (36 passes, 284 AIS ships,
   20,027&nbsp;km² of open water). The scene list and the detector settings were committed first; the detector is the production CFAR, unchanged.
-  The set was fixed in local commit <code>2f818e9</code> (24 Oct 2026) and first pushed to GitHub on 3 Nov together with its scoring, so its order rests on the commit dates
+  The set was fixed in local commit <a href="https://github.com/shivaji-patil/maritime-target-correlation/commit/2f818e9"><code>2f818e9</code></a> (24 Oct 2026) and first pushed to GitHub on 3 Nov together with its scoring, so its order rests on the commit dates
   (the fresh tests below were pushed before scoring). Later, its passes were among the 129 used to fit the second fresh test's candidate thresholds (below), which were rejected.
   Only Massachusetts Bay (Boston) is unseen water: the Chesapeake entrance and New York Lower Bay overlap development areas
   of the learned detector below. Intervals are 95% bootstraps that resample whole passes.</p>
@@ -138,7 +138,7 @@
   <p class='small'><b>Scored twice, same detector.</b> The first scoring of the locked set exposed a fault in the truth, not the detector: AIS had been extracted only inside each area's box, so a ship that had just left the box stayed in the truth at its last fix and counted as a miss. AIS is now extracted 0.1° beyond the box; the truth was rebuilt for every set and every result re-run, with no detector setting changed. The first scoring gave Pd 0.58 at k&nbsp;=&nbsp;5 on the locked set (342 ships, including the stale ones); it is kept alongside this one.</p>
   <p><b>How many unmatched targets are vessels?</b> A stratified random sample of 128 of the 402 unmatched targets on the test and locked passes was labelled from the radar chips alone, without AIS, by Claude, an AI model rather than a trained analyst. Of those judged either way, about 64% look like vessels (55%–73%); 47 were too small or faint to call, and counting all of those either way puts the share between 38% and 91%. So the false-alarm rate likely includes many real vessels without AIS. A trained analyst's review would firm this up.</p>
   <p class="small">Truth is AIS: vessels without it count as false alarms, so the false-alarm rate is an upper bound. Breakdowns by area, wind, wave height and incidence angle
-  (nearest NOAA buoy within 60&nbsp;km) are in the repository's KPI report. The hull axis has a 180° ambiguity: the radar gives orientation, not direction of travel.</p>
+  (nearest NOAA buoy within 60&nbsp;km) are in the <a href="https://github.com/shivaji-patil/maritime-target-correlation/blob/main/docs/KPIS.md">repository's KPI report</a>. The hull axis has a 180° ambiguity: the radar gives orientation, not direction of travel.</p>
 </section>
 
 <section>
@@ -180,7 +180,8 @@
   the cut is only 15% (-18% to 46%). On the locked passes, v6 shows <b>no demonstrated advantage</b> over CFAR set to the same recall.</p>
   <div class="scroll"><table><thead><tr><th>Locked area</th><th>v6 ships / false alarms</th><th>CFAR k&nbsp;=&nbsp;5</th><th>CFAR at equal recall (k)</th><th>Exposure</th></tr></thead><tbody><tr><td>Massachusetts Bay (Boston)</td><td>39 / 22</td><td>40 / 77</td><td>6.75: 39 / 16</td><td>unseen water</td></tr><tr><td>Chesapeake entrance</td><td>49 / 65</td><td>48 / 64</td><td>4.75: 49 / 81</td><td>shares about 22 km² with a development area</td></tr><tr><td>Both</td><td>88 / 87</td><td>88 / 141</td><td>5.25: 88 / 102</td><td></td></tr></tbody></table></div>
   <p><b>A pre-registered fresh test.</b> To settle it, three new areas (Delaware Bay entrance, Charleston approaches, Columbia River entrance), the pass rule and three endpoints
-  were committed, and both detectors frozen by fingerprint, before any of their data was fetched; the 36 passes were then scored once (a first run stopped on a division by zero before computing any metric; the fix is commit <code>f551fd5</code>).</p>
+  were committed, and both detectors frozen by fingerprint, before any of their data was fetched (commit <a href="https://github.com/shivaji-patil/maritime-target-correlation/commit/033e970"><code>033e970</code></a> on branch <a href="https://github.com/shivaji-patil/maritime-target-correlation/blob/fresh-prereg/config/fresh_test.json"><code>fresh-prereg</code></a>, <a href="https://github.com/shivaji-patil/maritime-target-correlation/activity?ref=fresh-prereg">push log</a>);
+  the 36 passes were then scored once (a first run stopped on a division by zero before computing any metric; the fix is commit <a href="https://github.com/shivaji-patil/maritime-target-correlation/commit/f551fd5"><code>f551fd5</code></a>).</p>
   <div class="scroll"><table><thead><tr><th>Fresh test, 36 passes, 105 ships</th><th>v6</th><th>CFAR</th></tr></thead><tbody><tr><td>Pd at 1 / 5 / 10 FA per 1,000 km²</td><td>0.67 / 0.76 / 0.79</td><td>0.68 / 0.78 / 0.80</td></tr><tr><td>At the operating point: Pd, FA per 1,000 km²</td><td>0.78, 7.7</td><td>0.81, 17.1 (k&nbsp;=&nbsp;5)</td></tr><tr><td>False alarms at equal recall</td><td>135</td><td><b>85</b> (k&nbsp;=&nbsp;6.5)</td></tr></tbody></table></div>
   <p>Pd at 5&nbsp;FA: -0.019 (interval -0.053 to +0.021), no difference. False alarms against CFAR at equal recall:
   59% <b>more</b> (interval for the cut -116% to -15%). Under the rule fixed in advance, <b>v6 is worse on fresh water</b>.
@@ -190,7 +191,7 @@
   <p class="small">Only Massachusetts Bay (Boston) is unseen water: the Chesapeake entrance shares about 22&nbsp;km² of scored water with Hampton Roads, and New York Lower Bay is left out because it overlaps the
   New York–New Jersey development area (one of its scenes is a development pass). Equal-recall CFAR thresholds were picked after the fact, for reference.
   The test passes were looked at by this line of work several times on 3&nbsp;Nov: once by the Danish YOLO, once by an earlier classifier built on stale labels, and twice by this one
-  (the first with the wrong truth domain). Only the last is reported; the full chronology is in the repository README.</p>
+  (the first with the wrong truth domain). Only the last is reported; the full chronology is in the <a href="https://github.com/shivaji-patil/maritime-target-correlation#learned-detector-second-version">repository README</a>.</p>
 </section>
 
 <section>
@@ -198,7 +199,7 @@
   <p>CFAR is meant to hold a constant false-alarm rate, but on the 129 passes used so far its rate at k&nbsp;=&nbsp;5 varies twenty-fold between areas. Two ways to hold a budget of
   10 false alarms per 1,000&nbsp;km² were fitted on those passes and frozen: one fixed threshold (k&nbsp;=&nbsp;6), and a threshold set per scene from the scene's own
   clutter (no AIS needed). With hindsight, per-scene thresholds could reach Pd 0.81 at the budget against 0.75 for a fixed one, so there is room to gain.</p>
-  <p>Both were scored once on 60 pre-registered passes in five new areas (254 AIS ships):</p>
+  <p>Both were scored once on 60 pre-registered passes in five new areas (254 AIS ships; commit <a href="https://github.com/shivaji-patil/maritime-target-correlation/commit/fdc8a64"><code>fdc8a64</code></a> on branch <a href="https://github.com/shivaji-patil/maritime-target-correlation/blob/fresh2-prereg/config/fresh2_test.json"><code>fresh2-prereg</code></a>, <a href="https://github.com/shivaji-patil/maritime-target-correlation/activity?ref=fresh2-prereg">push log</a>):</p>
   <div class="scroll"><table><thead><tr><th>60 fresh passes</th><th>Pd</th><th>FA per 1,000&nbsp;km²</th><th>Casco Bay</th><th>Mobile Bay</th><th>San Diego</th><th>Savannah</th><th>Tampa Bay</th></tr></thead><tbody><tr><td>Fixed k&nbsp;=&nbsp;6</td><td>0.56</td><td>22.8</td><td>13.6</td><td>58.3</td><td>20.2</td><td>8.0</td><td>4.8</td></tr><tr><td>Adaptive</td><td>0.54</td><td>28.2</td><td>21.9</td><td>53.2</td><td>20.7</td><td>21.9</td><td>16.1</td></tr><tr><td>Production k&nbsp;=&nbsp;5</td><td>0.63</td><td>34.9</td><td>27.8</td><td>65.0</td><td>53.6</td><td>21.0</td><td>12.0</td></tr></tbody></table></div>
   <p><b>The budget does not transfer:</b> at the fixed threshold the rate is 22.8 per 1,000&nbsp;km² (21.3 to 24.4), more than twice the budget, and
   58 in Mobile Bay. <b>The clutter rule does not help:</b> it is no more even (+0.061, -0.018 to +0.109) and costs Pd against
@@ -215,8 +216,8 @@
   <h2>A structure map from each region's own history</h2>
   <p>In Mobile Bay, 87% of the false alarms sat on 32 spots that recurred from pass to pass; 11 of them are mapped offshore platforms. So the next test kept CFAR as it is and
   added a map: a spot goes on it when returns that no AIS ship explains recur within 100&nbsp;m on at least three of a region's January–June passes. On later passes, unexplained
-  returns near a spot leave the dark list; anything a live AIS ship explains is kept. The rule, five new areas and the success criteria were committed before any data was fetched,
-  and the 30 July–December passes (281 AIS ships) were scored once.</p>
+  returns near a spot leave the dark list; anything a live AIS ship explains is kept. The rule, five new areas and the success criteria were committed before any data was fetched
+  (commit <a href="https://github.com/shivaji-patil/maritime-target-correlation/commit/24e4baf"><code>24e4baf</code></a> on branch <a href="https://github.com/shivaji-patil/maritime-target-correlation/blob/fresh3-prereg/config/fresh3_test.json"><code>fresh3-prereg</code></a>, <a href="https://github.com/shivaji-patil/maritime-target-correlation/activity?ref=fresh3-prereg">push log</a>), and the 30 July–December passes (281 AIS ships) were scored once.</p>
   <div class="scroll"><table><thead><tr><th>Area</th><th>AIS ships</th><th>Map spots</th><th>False alarms per 1,000&nbsp;km², without map</th><th>with map</th></tr></thead>
   <tbody><tr><td>Honolulu</td><td>30</td><td>3</td><td>45.1</td><td><b>34.7</b></td></tr><tr><td>Long Island Sound</td><td>17</td><td>1</td><td>5.7</td><td><b>4.0</b></td></tr><tr><td>Narragansett Bay</td><td>160</td><td>0</td><td>14.9</td><td><b>14.9</b></td></tr><tr><td>Sabine Pass</td><td>57</td><td>8</td><td>27.2</td><td><b>9.9</b></td></tr><tr><td>Wilmington</td><td>17</td><td>10</td><td>26.7</td><td><b>12.4</b></td></tr></tbody></table></div>
   <p>False alarms at production's threshold fall 41% (19.7 to 11.5 per 1,000&nbsp;km²; interval 37% to 46%),
@@ -238,7 +239,7 @@
   <p>A check on Canadian water, where no historical AIS is available. Production CFAR ran on 12 Sentinel-1 passes (HH/HV, November 2025 to October 2026) over
   the Jeanne d'Arc Basin fields, about 350&nbsp;km east-southeast of St.&nbsp;John's. The six November–April passes built the map with no list of structures.
   The installation list (the C-NLOPB layer, plus the West White Rose platform from the provincial layer), the pass rule and the success criterion were committed
-  before any radar data was fetched (a local commit, not pushed before scoring; Tests 1 to 5 were pushed to GitHub before scoring). Found means a map spot within 500&nbsp;m, the safety-zone radius.</p>
+  before any radar data was fetched (local commit <a href="https://github.com/shivaji-patil/maritime-target-correlation/commit/d756a57"><code>d756a57</code></a>, not pushed before scoring; Tests 1 to 5 were pushed to GitHub before scoring). Found means a map spot within 500&nbsp;m, the safety-zone radius.</p>
   <div class="scroll"><table><thead><tr><th>Installation</th><th>Listed by</th><th>Nearest map spot</th><th>Result</th><th>Detected within 500&nbsp;m of the listed point</th></tr></thead>
   <tbody><tr><td>Hibernia</td><td>C-NLOPB</td><td>85&nbsp;m</td><td><b>found</b></td><td>12 of 12</td></tr><tr><td>Hebron</td><td>C-NLOPB</td><td>57&nbsp;m</td><td><b>found</b></td><td>12 of 12</td></tr><tr><td>Terra Nova FPSO</td><td>C-NLOPB</td><td>134&nbsp;m</td><td><b>found</b></td><td>12 of 12</td></tr><tr><td>SeaRose FPSO</td><td>C-NLOPB</td><td>3,673&nbsp;m</td><td><b>not found</b></td><td>0 of 12</td></tr><tr><td>West White Rose (installed 2025)</td><td>NL government</td><td>78&nbsp;m</td><td><b>found</b></td><td>12 of 12</td></tr></tbody></table></div>
   <p><b>3 of 4</b> listed installations were found, short of the pre-registered bar of all four; West White Rose, which the regulator's layer does not list yet, was found too.
@@ -289,7 +290,7 @@
 
 <section>
   <h2>Fourth pre-registered test: structure-rich new water</h2>
-  <p class="note">Rules, areas and pass list fixed <mark class="ts">5 Nov 2026, 00:21 UTC (4 Nov, 20:51 NST)</mark> and pushed to GitHub (commit <code>82f9dbb</code>) before any of the radar or AIS data was fetched. Scored once, <mark class="ts">5 Nov 2026, 01:51 UTC (4 Nov, 22:21 NST)</mark> (commit <code>e0a83ab</code>).</p>
+  <p class="note">Rules, areas and pass list fixed <mark class="ts">5 Nov 2026, 00:21 UTC (4 Nov, 20:51 NST)</mark> and pushed to GitHub (commit <a href="https://github.com/shivaji-patil/maritime-target-correlation/commit/82f9dbb"><code>82f9dbb</code></a> on branch <a href="https://github.com/shivaji-patil/maritime-target-correlation/blob/fresh4-prereg/config/fresh4_test.json"><code>fresh4-prereg</code></a>, <a href="https://github.com/shivaji-patil/maritime-target-correlation/activity?ref=fresh4-prereg">push log</a>) before any of the radar or AIS data was fetched. Scored once, <mark class="ts">5 Nov 2026, 01:51 UTC (4 Nov, 22:21 NST)</mark> (commit <a href="https://github.com/shivaji-patil/maritime-target-correlation/commit/e0a83ab"><code>e0a83ab</code></a>).</p>
   <p>Five new areas chosen for their structures: four off Louisiana with 56 standing federal platforms, and the
   Santa Barbara Channel, whose platforms are not on the federal Gulf list the pipeline uses, so the map has to find them itself. The map drops spots where an AIS ship sat;
   the alongside flag runs at GROW&nbsp;=&nbsp;1.5, both fixed beforehand. 30 July–December passes, 129 AIS ships, 12,306&nbsp;km².</p>
@@ -307,7 +308,7 @@
 
 <section>
   <h2>Fifth pre-registered test: a calibrated flag in dense platform fields</h2>
-  <p class="note">Rules, areas and pass list fixed <mark class="ts">5 Nov 2026, 03:57 UTC (5 Nov, 00:27 NST)</mark> and pushed to GitHub (commit <code>27dc282</code>) before any of the radar or AIS data was fetched. Scored once, <mark class="ts">5 Nov 2026, 05:03 UTC (5 Nov, 01:33 NST)</mark> (commit <code>de50f3b</code>).</p>
+  <p class="note">Rules, areas and pass list fixed <mark class="ts">5 Nov 2026, 03:57 UTC (5 Nov, 00:27 NST)</mark> and pushed to GitHub (commit <a href="https://github.com/shivaji-patil/maritime-target-correlation/commit/27dc282"><code>27dc282</code></a> on branch <a href="https://github.com/shivaji-patil/maritime-target-correlation/blob/fresh5-prereg/config/fresh5_test.json"><code>fresh5-prereg</code></a>, <a href="https://github.com/shivaji-patil/maritime-target-correlation/activity?ref=fresh5-prereg">push log</a>) before any of the radar or AIS data was fetched. Scored once, <mark class="ts">5 Nov 2026, 05:03 UTC (5 Nov, 01:33 NST)</mark> (commit <a href="https://github.com/shivaji-patil/maritime-target-correlation/commit/de50f3b"><code>de50f3b</code></a>).</p>
   <p>The fourth test's flag failed on Main Pass's dense platform field, so the flag was recalibrated. In each area, structures with a neighbour within 500&nbsp;m and isolated
   ones each get their own threshold, or are switched off, chosen from the area's own January–June passes so the flag adds at most 1 false alarm per 1,000&nbsp;km².
   On the ten areas used before, this met both bars, narrowly. The test: the five densest federal platform fields in a scan of the Gulf.</p>
@@ -456,13 +457,16 @@
 
 <section>
   <h2>Related work</h2>
-  <p>The harbour side of this work is <a href="https://github.com/shivaji-patil/harbour-twin">Harbour Twin</a>, a 3D digital twin of Vancouver and St. John's harbours built from public data
-  (<a href="https://github.com/shivaji-patil/harbour-twin">source</a>). It has the first version of this ship detector, and each pass here can also be written in its viewer's format.</p>
+  <p>The harbour side of this work is <a href="https://github.com/shivaji-patil/harbour-twin">Harbour Twin</a>, a 3D digital twin of Vancouver and St. John's harbours built from public data.
+  It has the first version of this ship detector, and each pass here can also be written in its viewer's format.</p>
 </section>
 
 <section class="sources">
   <h2>Data and licences</h2>
   <ul>
+    <li>Code: <a href="https://github.com/shivaji-patil/maritime-target-correlation">github.com/shivaji-patil/maritime-target-correlation</a>, source-available under
+    <a href="https://polyformproject.org/licenses/noncommercial/1.0.0">PolyForm Noncommercial 1.0.0</a> (not open source), as are this page's text and figures; anyone may run the code to evaluate
+    the author's work. Commercial use needs the author's permission.</li>
     <li>Contains modified Copernicus Sentinel data (2024–2026). Sentinel-1 RTC from Microsoft Planetary Computer (processed by Catalyst), licensed by Microsoft under CC BY 4.0
     (<a href="https://creativecommons.org/licenses/by/4.0/">https://creativecommons.org/licenses/by/4.0/</a>); images here are modified (downsampled, contrast-stretched, annotated).</li>
     <li>AIS 2024: Office for Coastal Management, 2026: Nationwide Automatic Identification System 2024, NOAA InPort item 73064
@@ -471,7 +475,7 @@
     <li>Danish-waters study (a separate, private repository; aggregates only here): AIS from the Danish Maritime Authority; structures from OpenStreetMap (ODbL);
     winter wind from ERA5 via Open-Meteo (CC BY 4.0); Sentinel-1 backbones from SSL4EO-S12 via TorchGeo.</li>
     <li>Water, piers and bridges: Overture Maps Foundation (includes OpenStreetMap data, ODbL; © OpenStreetMap contributors). The open-water mask is derived from them by
-    <code>mtc/case.py</code> and Harbour Twin's water mask.</li>
+    <a href="https://github.com/shivaji-patil/maritime-target-correlation/blob/main/mtc/case.py"><code>mtc/case.py</code></a> and Harbour Twin's water mask.</li>
     <li>Offshore platforms mapped only in OpenStreetMap (the Mobile Bay counts above): OpenStreetMap via the Overpass API (ODbL).</li>
     <li>Federal offshore platforms: BOEM Platform Structures (data.boem.gov), U.S. Government data.</li>
     <li>Grand Banks installations: Installations layer of the Canada-Newfoundland and Labrador Offshore Energy Regulator (C-NLOER, formerly C-NLOPB), for illustrative and reference
@@ -481,10 +485,10 @@
     <li>Base map in the console screenshots: © OpenStreetMap contributors.</li>
     <li>Learned detector v6 starts from the SSL4EO-S12 SoftCon Sentinel-1 ResNet-50 weights (Wang, Albrecht and Zhu, 2024; CC BY 4.0), loaded through TorchGeo.
     The fine-tuned weights are not included.</li>
-    <li>Danish YOLO comparison: two historical scripts (<code>tools/validate_learned.py</code>, <code>tools/compare_on_dev.py</code>) import Ultralytics YOLO (AGPL-3.0) from a separate environment.
+    <li>Danish YOLO comparison: two historical scripts (<a href="https://github.com/shivaji-patil/maritime-target-correlation/blob/main/tools/validate_learned.py"><code>tools/validate_learned.py</code></a>, <a href="https://github.com/shivaji-patil/maritime-target-correlation/blob/main/tools/compare_on_dev.py"><code>tools/compare_on_dev.py</code></a>) import Ultralytics YOLO (AGPL-3.0) from a separate environment.
     Ultralytics and the YOLO weights are not included and are not needed for anything else.</li>
     <li>No datasets or models produced by Chinese institutions are used. The Danish YOLO's input scaling keeps one number from LS-SSDD-v1.0 (its 57&nbsp;DN open-sea level)
-    as a convention; no LS-SSDD imagery or weights are used (<code>mtc/yolo_input.py</code>).</li>
+    as a convention; no LS-SSDD imagery or weights are used (<a href="https://github.com/shivaji-patil/maritime-target-correlation/blob/main/mtc/yolo_input.py"><code>mtc/yolo_input.py</code></a>).</li>
   </ul>
 </section>
 </main>
