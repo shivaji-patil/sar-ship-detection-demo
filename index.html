@@ -24,13 +24,14 @@
     </div>
     <p class="note">Baseline: classical CFAR. Truth: AIS, which misses vessels without transponders, so false-alarm figures are upper bounds.</p>
     <p class="cta"><a href="brief.pdf">Two-page brief (PDF)</a></p>
+    <p class="note">Last updated 5 Nov 2026, 01:54 UTC (4 Nov, 22:24 NST).</p>
   </div>
 </header>
 <main class="wrap">
 <section class="summary">
   <h2>In 30 seconds</h2>
   <ul>
-    <li><b>Tested the way an operator would need.</b> Three fresh test sets in thirteen new US areas: the areas, the pass rule and the success criteria were committed and
+    <li><b>Tested the way an operator would need.</b> Four fresh test sets in 18 new US areas: the areas, the pass rule and the success criteria were committed and
     timestamped on GitHub before any data was fetched, then each was scored once. Results are reported whichever way they came out.</li>
     <li><b>A learned detector was not good enough, and the gate was fixed.</b> A Sentinel-1 ResNet-50 classifier passed the promotion gate, but on fresh water it produced
     59% more false alarms than classical CFAR set to find as many ships. It was not promoted, and the gate gained a rule that would catch it.</li>
@@ -41,10 +42,13 @@
     beyond the federal platform list in the next six months of five new areas, and raised Pd at 5 false alarms per 1,000&nbsp;km² by +0.05
     (+0.03 to +0.09), without hiding any AIS-tracked ship. The pre-registered scoring, which left that list out by mistake, gave
     41% and +0.08.</li>
+    <li><b>Hiding next to a structure.</b> Masking recurring returns has a cost: in Mobile Bay 7 of 37 AIS ships sat at a map spot,
+    because vessels moor at some of them. Spots with an AIS ship beside them are now left unmasked. A flag for structures whose return changes caught
+    60% of vessels injected beside them in development. In a fourth pre-registered test on five structure-rich new areas, the map with that rule was an <b>improvement</b> (false alarms cut 65%, 2 of 115 AIS vessels at a spot); the flag <b>does not transfer</b>: it caught 66% of injected vessels but added 1.9 false alarms per 1,000&nbsp;km², over its bar of 1.0, so it stays out of production.</li>
     <li><b>On Canadian water.</b> Over the Grand Banks oil fields, with no AIS and no list of structures, the same map found 3 of the
     regulator's 4 production installations and the new West White Rose platform, with no false spot. The fourth, SeaRose, appears on every pass
     2.0&nbsp;km from its listed position, and swings too far for the map's 100&nbsp;m rule.</li>
-    <li><b>Reproducible.</b> Every number on this page is read from a results file written by a script in the repository; the code has 109 tests, and every detector
+    <li><b>Reproducible.</b> Every number on this page is read from a results file written by a script in the repository; the code has 127 tests, and every detector
     version and gate decision is in an MLflow registry.</li>
   </ul>
 </section>
@@ -211,7 +215,7 @@
   and Pd at 5 false alarms per 1,000&nbsp;km² rises from 0.39 to 0.47 (+0.082, interval +0.053 to +0.119).
   No AIS ship in the test passes sat at a mapped spot (0 of 281; limit 5%), so none would have been hidden had it been dark. Under the rule fixed in advance this is an
   <b>improvement</b>. Two passes had no AIS in the NOAA files; they were kept as the rule required, which if anything understates the gain. The cost is a dark vessel moored at a
-  mapped structure, which AIS truth cannot measure; a rehearsal on Mobile Bay put the exposure at about 7%, so the map suits areas with many fixed structures best when an analyst reviews its spots.</p>
+  mapped spot. These areas had none, but Mobile Bay, measured later, had 7 of 37 AIS ships at a spot; the fix is below.</p>
   <p><b>Correction, found after publishing.</b> The scorer left out production's platform exclusion, assuming these areas have no federal (BOEM) platforms; 8 stand in the
   Sabine Pass box, and 4 of Sabine's 8 spots are those platforms (within 34&nbsp;m), which the map found without the list. Scored again with the
   exclusion on both arms (post hoc, the published result reproduced exactly first): false alarms fall 34% (17.6 to
@@ -240,6 +244,57 @@
   its return moves up to 382&nbsp;m between passes, more than the map's 100&nbsp;m recurrence radius. Rebuilt with a 300&nbsp;m radius (about one hull length), the map puts a spot
   40&nbsp;m from SeaRose and adds no false spot, but that radius was chosen after seeing this data, so it is the design for the next test, not a result.
   Two lessons: size the recurrence radius to the largest swing (a moored FPSO), and treat a published position as something to check.</p>
+</section>
+
+<section>
+  <h2>How firm are these results?</h2>
+  <p>The intervals above resample passes within each area and hold the areas fixed, so they describe those areas, not the next region. Resampling the areas
+  as well (then passes within each drawn area) gives the interval for a new set of areas like these. With five areas it is coarse, and it is the honest one.
+  Both are shown for the corrected numbers (post hoc; the pre-registered readings stand).</p>
+  <div class="scroll"><table><thead><tr><th>Result</th><th>Value</th><th>95%, areas fixed</th><th>95%, areas resampled</th></tr></thead><tbody>
+  <tr><td>Structure map: Pd gain at 5 false alarms per 1,000&nbsp;km²</td><td>+0.046</td><td>+0.027 to +0.094</td><td><b>+0.006 to +0.120</b></td></tr>
+  <tr><td>Structure map: false-alarm cut at production's threshold</td><td>34%</td><td>30% to 39%</td><td><b>15% to 48%</b></td></tr>
+  <tr><td>Structure map: AIS vessels at a mapped spot</td><td>0 of 217</td><td colspan="2">at most 1.4% (exact bound for zero events, counting each vessel once)</td></tr>
+  <tr><td>Fixed threshold: false alarms per 1,000&nbsp;km² (budget 10)</td><td>20.6</td><td>19.0 to 22.2</td><td><b>6.7 to 39.4</b></td></tr>
+  </tbody></table></div>
+  <p>The map's gain survives treating the areas as a sample, with little margin. The budget result does not: one area decides it (without Mobile Bay the
+  pooled rate is 10.1), so it says a fixed threshold fails where there are many structures, not that it fails everywhere.</p>
+</section>
+
+<section>
+  <h2>A vessel hiding next to a structure</h2>
+  <p>The map takes returns at known structures off the dark list, and production leaves returns within 150&nbsp;m of a listed platform out. Both would hide
+  a dark vessel moored alongside. Two things were checked on areas already used (development, not a test).</p>
+  <p><b>Map spots where vessels sit.</b> In Mobile Bay, which was not one of the structure-map test areas, 7 of 37 AIS ships on the July–December passes lay within 150&nbsp;m
+  of a spot: some recurring returns are moorings and waiting berths, not structures. The fix is simple: a spot that had an AIS ship beside it on any map pass is not masked.</p>
+  <div class="scroll"><table><thead><tr><th>Area</th><th>Map spots</th><th>Had an AIS ship beside them</th><th>AIS ships at a spot, July–December</th><th>Dark-list cut</th></tr></thead>
+  <tbody><tr><td>Gulf platforms</td><td>1</td><td>0</td><td>0 → <b>0</b> of 50</td><td>11% → 11%</td></tr><tr><td>Mobile Bay</td><td>25</td><td>9</td><td>7 → <b>2</b> of 37</td><td>80% → 54%</td></tr><tr><td>Sabine Pass</td><td>4</td><td>1</td><td>0 → <b>0</b> of 57</td><td>44% → 42%</td></tr><tr><td>Wilmington</td><td>10</td><td>1</td><td>0 → <b>0</b> of 17</td><td>54% → 44%</td></tr><tr><td>Honolulu</td><td>3</td><td>0</td><td>0 → <b>0</b> of 30</td><td>23% → 23%</td></tr></tbody></table></div>
+  <p><b>Flag the structure instead of hiding it.</b> Each structure gets a signature from the January–June passes: how many separate returns it shows and how big the largest is.
+  On a later pass it is flagged when it shows an extra return, or one more than GROW times the biggest seen, and its returns go back on the dark list. It was scored by adding
+  real ship returns (from AIS-matched detections elsewhere) 60, 100, 140&nbsp;m from 534 structure-passes, 1,537 times.</p>
+  <div class="scroll"><table><thead><tr><th>GROW</th><th>Added false alarms per 1,000&nbsp;km²</th><th>Injected vessels flagged</th></tr></thead><tbody><tr><td>1.25×</td><td>1.34</td><td>66%</td></tr><tr><td>1.5×</td><td>0.94</td><td>60%</td></tr><tr><td>2.0×</td><td>0.59</td><td>55%</td></tr><tr><td>3.0×</td><td>0.40</td><td>48%</td></tr><tr><td>extra return only</td><td>0.20</td><td>6%</td></tr></tbody></table></div>
+  <p>GROW&nbsp;=&nbsp;1.5 was chosen by a rule fixed in advance (the most sensitive setting adding at most 1 false alarm per 1,000&nbsp;km²): it flags 60%
+  of injected vessels (31% of small returns, 66% of medium, 84% of large) for
+  0.94 added false alarms per 1,000&nbsp;km². Of the 4 AIS ships that actually sat within 150&nbsp;m of a structure, each scored as if it alone were dark,
+  2 were flagged. An independent code review (Codex, three passes) found twelve problems in this scorer before the fourth test was frozen; fixing them lowered recovery from 73% to 60%.</p>
+</section>
+
+<section>
+  <h2>Fourth pre-registered test: structure-rich new water</h2>
+  <p class="note">Rules, areas and pass list fixed 5 Nov 2026, 00:21 UTC (4 Nov, 20:51 NST) and pushed to GitHub (commit <code>82f9dbb</code>, private repository) before any of the radar or AIS data was fetched. Scored once, 5 Nov 2026, 01:51 UTC (4 Nov, 22:21 NST) (commit <code>e0a83ab</code>).</p>
+  <p>Five new areas chosen for their structures: four off Louisiana with 56 standing federal platforms, and the
+  Santa Barbara Channel, whose platforms are not on the federal Gulf list the pipeline uses, so the map has to find them itself. The map drops spots where an AIS ship sat;
+  the alongside flag runs at GROW&nbsp;=&nbsp;1.5, both fixed beforehand. 30 July–December passes, 129 AIS ships, 12,306&nbsp;km².</p>
+  <div class="scroll"><table><thead><tr><th>Area</th><th>Federal platforms</th><th>Map spots</th><th>False alarms per 1,000&nbsp;km², without map</th><th>with map</th></tr></thead>
+  <tbody><tr><td>Eugene Island (LA)</td><td>12</td><td>0</td><td>4.0</td><td><b>4.0</b></td></tr><tr><td>Main Pass (LA)</td><td>26</td><td>27</td><td>93.2</td><td><b>22.9</b></td></tr><tr><td>Santa Barbara Channel</td><td>0</td><td>6</td><td>17.7</td><td><b>5.8</b></td></tr><tr><td>Southwest Pass, Mississippi River</td><td>10</td><td>6</td><td>20.4</td><td><b>6.4</b></td></tr><tr><td>West Cameron (LA)</td><td>8</td><td>2</td><td>10.5</td><td><b>8.4</b></td></tr></tbody></table></div>
+  <ul>
+    <li><b>Map: improvement.</b> Pd at 5 false alarms per 1,000&nbsp;km² 0.50 → 0.93 (+0.426; 95% +0.019 to +0.720, areas resampled);
+    false alarms cut 65% (35% to 75%); 2 of 115 AIS vessels sat at a mapped spot (1.6% of ship-passes). Keeping the occupied spots would have cut 69% and exposed
+    7 of 129 ships (dropped: 65%, 2).</li>
+    <li><b>Alongside flag: does not transfer.</b> 66% of 1,547 injected vessels flagged (95% 54% to 70%), for
+    1.87 added false alarms per 1,000&nbsp;km² (23 false flags in 555 structure-passes; bar: at least 50%, lower end 40%, at most 1.0).
+    AIS ships beside a structure, each scored as if dark: 5 of 14 flagged.</li>
+  </ul>
 </section>
 
 <section>
