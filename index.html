@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>SAR Ship Detection</title>
-<meta name="description" content="Sentinel-1 ship detection correlated with AIS, run as a scheduled service and validated on 2024 NOAA AIS.">
+<meta name="description" content="Sentinel-1 ship detection correlated with AIS, built as a scheduled service and validated on 2024 NOAA AIS.">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -12,10 +12,11 @@
   <div class="wrap">
     <p class="eyebrow">Maritime domain awareness prototype · Shivaji Patil</p>
     <h1>Ships in Sentinel-1 radar, checked against AIS</h1>
-    <p class="lede plain">Free satellite radar sees most coastlines every few days, through cloud and darkness. This service finds the ships in each new image,
-    checks every one against the AIS position broadcasts ships send, and flags the ones that are not broadcasting. It runs by itself after every satellite pass.</p>
+    <p class="lede plain">Free satellite radar sees most coastlines every few days, through cloud and darkness. This service is built to find the ships in each new image,
+    check every one against the AIS position broadcasts ships send, and flag the ones no broadcast accounts for, by itself after each satellite pass.
+    It has processed one live pass, Vancouver harbour on 22 October 2026 (below), and is not running now.</p>
     <p class="lede">Scored the way an operator would use it: probability of detection at a fixed false-alarm rate,
-    on 12 passes over US waters where complete AIS is public.</p>
+    on 12 passes over US waters where a full year of AIS is public.</p>
     <div class="kpis">
       <div><b>0.63</b><span>Pd at 5 false alarms per 1,000 km²</span></div>
       <div><b>98%</b><span>of AIS ships over 200 m detected (k&nbsp;=&nbsp;5)</span></div>
@@ -24,7 +25,7 @@
     </div>
     <p class="note">Baseline: classical CFAR. Truth: AIS, which misses vessels without transponders, so false-alarm figures are upper bounds.</p>
     <p class="cta"><a href="brief.pdf">Two-page brief (PDF)</a> · <a href="note.pdf">Technical note: five pre-registered tests (PDF)</a></p>
-    <p class="note">Last updated <mark class="ts">5 Nov 2026, 12:46 UTC (5 Nov, 09:16 NST)</mark>.</p>
+    <p class="note">Last updated <mark class="ts">5 Nov 2026, 15:56 UTC (5 Nov, 12:26 NST)</mark>.</p>
   </div>
 </header>
 <main class="wrap">
@@ -33,29 +34,31 @@
   <ul>
     <li><b>Tested the way an operator would need.</b> Five fresh test sets in 23 new US areas: the areas, the pass rule and the success criteria were committed before
     any data was fetched and pushed to GitHub before scoring (the last two before fetching too), and each was scored once. Results are reported whichever way they came out.</li>
-    <li><b>A learned detector was not good enough, and the gate was fixed.</b> A Sentinel-1 ResNet-50 classifier passed the promotion gate, but on fresh water it produced
-    59% more false alarms than classical CFAR set to find as many ships. It was not promoted, and the gate gained a rule that would catch it.</li>
-    <li><b>A false-alarm budget does not travel.</b> A CFAR threshold set to give 10 false alarms per 1,000&nbsp;km² on 129 passes gave 21 in five new areas
-    (23 as first scored, before the federal platform list was applied).
+    <li><b>A learned detector was not good enough, and the gate gained a rule.</b> A Sentinel-1 ResNet-50 classifier passed the promotion gate, but on fresh water it produced
+    59% more false alarms than classical CFAR set to find as many ships. It was not promoted. The gate gained an equal-recall rule, but the classifier
+    still passes it on the original test passes; only the fresh test caught the problem.</li>
+    <li><b>A false-alarm budget did not travel to structure-dense water.</b> A CFAR threshold set to give 10 false alarms per 1,000&nbsp;km² on 129 passes gave 21 in five new areas
+    (23 as first scored, before the federal platform list was applied); without Mobile Bay it was 10.1.
     Most of the excess sits on returns that recur from pass to pass: in Mobile Bay, 87% of false alarms fell on 32 recurring spots,
     only 4 of them on the federal platform list.</li>
-    <li><b>The fix held up.</b> A map of recurring unexplained returns, built from each region's own first six months, cut false alarms on the dark list by 34%
+    <li><b>The fix held up where structures are unlisted.</b> A map of recurring unexplained returns, built from each region's own first six months, cut false alarms on the dark list by 34%
     beyond the federal platform list in the next six months of five new areas, and raised Pd at 5 false alarms per 1,000&nbsp;km² by +0.05
     (+0.03 to +0.09), without hiding any AIS-tracked ship. The pre-registered scoring, which left that list out by mistake, gave
-    41% and +0.08.</li>
+    41% and +0.08. In five dense federal platform fields (the fifth test), where nearly every structure was already listed, it showed <b>no demonstrated improvement</b> (9% fewer false alarms).</li>
     <li><b>Hiding next to a structure.</b> Masking recurring returns has a cost: in Mobile Bay 7 of 37 AIS ships sat at a map spot,
     because vessels moor at some of them. Spots with an AIS ship beside them are now left unmasked. A flag for structures whose return changes caught
     60% of vessels injected beside them in development. In a fourth pre-registered test on five structure-rich new areas, the map with that rule was an <b>improvement</b> (false alarms cut 65%, 2 of 115 AIS vessels at a spot); the flag <b>does not transfer</b>: it caught 66% of injected vessels but added 1.9 false alarms per 1,000&nbsp;km², over its bar of 1.0, so it stays out of production. A version calibrated on each area's own history, tested in a fifth pre-registered test on five dense platform fields, <b>does not work</b> either (9% caught).</li>
     <li><b>On Canadian water.</b> Over the Grand Banks oil fields, with no AIS and no list of structures, the same map found 3 of the
-    regulator's 4 production installations and the new West White Rose platform, with no false spot. The fourth, SeaRose, appears on every pass
-    2.0&nbsp;km from its listed position, and swings too far for the map's 100&nbsp;m rule.</li>
-    <li><b>Reproducible.</b> Every result on this page is read from a results file written by a script in the repository; the code has 129 tests, and every detector
-    version and gate decision is in an MLflow registry.</li>
+    regulator's 4 production installations (the pre-registered bar was all four) and the new West White Rose platform, with no other spot.
+    The fourth, SeaRose, appears on every pass 2.0&nbsp;km from its listed position, and swings too far for the map's 100&nbsp;m rule.</li>
+    <li><b>Traceable.</b> Every result on this page is read from a results file in the repository; only the list of scheduled live passes comes from a local file. All but the Danish figures (copied from the Danish-waters study, a separate, private
+    repository) are computed there by scripts; the learned-detector results also need trained weights that are not included. The code has 132 tests, and every detector
+    version and gate decision is recorded in an MLflow registry (exported to <code>results/mlops.json</code>).</li>
   </ul>
 </section>
 
 <section class="live">
-  <h2>Latest live pass</h2>
+  <h2>The live pass</h2>
   <figure class="wide"><img src="img/live_vancouver.jpg" alt="Vancouver harbour radar image with ships ringed: green matched to AIS, red with no AIS match, small white rings AIS ships not detected" loading="lazy">
   <figcaption><b>Vancouver harbour</b>, Sentinel-1 pass Thu 22 Oct 2026 11:50 NDT (14:20 UTC), processed automatically.
   Green: matched to an AIS broadcast. Red: no AIS match. Small white rings: AIS ships on open water that the radar did not pick out.</figcaption></figure>
@@ -66,13 +69,13 @@
     <div><b>52 s</b><span>processing, once the scene was published (12 h after sensing)</span></div>
   </div>
   <p class="small">A target with no AIS match is not necessarily a vessel hiding: it can be a boat too small to need AIS, a buoy, a structure missing from the map, or a false alarm.
-  On the 2024 passes, where every result was checked, the same setting gave 13 unmatched targets per 1,000&nbsp;km²; here it is 77, in a busy harbour.
-  St. John's harbour is next: Mon 26 Oct 07:11 NDT, the first St. John's pass with AIS recorded around it.</p>
+  On the 2024 passes, where every detection was scored against NOAA AIS, the same setting gave 13 unmatched targets per 1,000&nbsp;km²; here it is 77, in a busy harbour.
+  This is the only live pass processed so far; the service is not running now (see Live operation below).</p>
 </section>
 
 
 <section>
-  <h2>What runs</h2>
+  <h2>How it is built to run</h2>
   <ol class='steps'><li><b>Plan</b><span>Predict Sentinel-1 overpasses of each harbour from the 12-day orbit repeat.</span></li><li><b>Record AIS</b><span>Record live AIS from 75 min before to 75 min after each pass (systemd timer).</span></li><li><b>Wait for the scene</b><span>Poll the Planetary Computer STAC catalogue until the scene is published.</span></li><li><b>Ingest</b><span>Read only the harbour window of the terrain-corrected Sentinel-1 scene (10 m).</span></li><li><b>Mask land</b><span>Open water from Overture/OSM, minus piers and bridges, and a coastal buffer.</span></li><li><b>Detect</b><span>Two-parameter CFAR on cross-pol backscatter; fragments within 100 m merged.</span></li><li><b>Correlate</b><span>AIS interpolated to the overpass; match region stretched along the track by each ship&#x27;s expected azimuth shift.</span></li><li><b>Characterise</b><span>Length and axis from the blob, polarisation ratio, platforms flagged (BOEM).</span></li><li><b>Products</b><span>GeoJSON, KML, image chips, alerts for dark targets in protected areas.</span></li><li><b>Review</b><span>Analyst console: accept or reject each target; decisions saved as labels.</span></li></ol>
   <figure class="wide"><img src="img/arch_pipeline.png" alt="Pipeline from pass planning through AIS recording, scene ingest, land mask, CFAR, AIS correlation, characterisation, products and the analyst console" loading="lazy"></figure>
 </section>
@@ -116,20 +119,24 @@
 </section>
 
 <section>
-  <h2>Locked test: three areas never used for any choice</h2>
+  <h2>Locked test: three areas never used to choose a production detector setting</h2>
   <p>The 12 test passes above helped choose the coastal buffer, so they are not a clean held-out set. A second set was therefore fixed before any of its data was fetched:
-  Massachusetts Bay: Boston approaches, Chesapeake Bay entrance and Cape Henry approaches, New York Lower Bay and Ambrose approaches, the first Sentinel-1 scene each month of 2024 that covers the area (36 passes, 284 AIS ships,
+  Massachusetts Bay (Boston approaches), the Chesapeake Bay entrance (Cape Henry approaches) and New York Lower Bay (Ambrose approaches), the first Sentinel-1 scene each month of 2024 that covers the area (36 passes, 284 AIS ships,
   20,027&nbsp;km² of open water). The scene list and the detector settings were committed first; the detector is the production CFAR, unchanged.
-  Intervals are 95% bootstraps that resample whole passes.</p>
+  The set was fixed in local commit <code>2f818e9</code> (24 Oct 2026) and first pushed to GitHub on 3 Nov together with its scoring, so its order rests on the commit dates
+  (the fresh tests below were pushed before scoring). Later, its passes were among the 129 used to fit the second fresh test's candidate thresholds (below), which were rejected.
+  Only Massachusetts Bay (Boston) is unseen water: the Chesapeake entrance and New York Lower Bay overlap development areas
+  of the learned detector below. Intervals are 95% bootstraps that resample whole passes.</p>
   <div class="scroll"><table><thead><tr><th>KPI</th><th>Test (12 passes)</th><th>Locked (36 passes)</th></tr></thead><tbody><tr><td>Pd at k&nbsp;=&nbsp;5</td><td>0.81 <span class='small'>(0.70–0.89)</span></td><td>0.69 <span class='small'>(0.62–0.77)</span></td></tr><tr><td>Pd, ships ≥ 25&nbsp;m</td><td>0.92 <span class='small'>(0.90–0.95)</span></td><td>0.90 <span class='small'>(0.85–0.95)</span></td></tr><tr><td>Pd, ships ≥ 50&nbsp;m</td><td>0.95 <span class='small'>(0.91–0.98)</span></td><td>0.94 <span class='small'>(0.89–0.99)</span></td></tr><tr><td>Pd at 5 false alarms per 1,000&nbsp;km²</td><td>0.63 <span class='small'>(0.46–0.77)</span></td><td>0.64 <span class='small'>(0.57–0.73)</span></td></tr><tr><td>False alarms per 1,000&nbsp;km² (upper bound)</td><td>13.1 <span class='small'>(7.6–25.9)</span></td><td>13.2 <span class='small'>(10.6–16.3)</span></td></tr><tr><td>CEP90, stationary ships (m)</td><td>139 <span class='small'>(98–183)</span></td><td>63 <span class='small'>(39–148)</span></td></tr><tr><td>CEP90, moving ships (m)</td><td>634 <span class='small'>(369–1203)</span></td><td>437 <span class='small'>(380–547)</span></td></tr><tr><td>AIS positions inside the 90% ellipse</td><td>0.88 <span class='small'>(0.80–0.95)</span></td><td>0.90 <span class='small'>(0.87–0.94)</span></td></tr><tr><td>Length mean absolute error (m)</td><td>33 <span class='small'>(28–41)</span></td><td>50 <span class='small'>(41–60)</span></td></tr><tr><td>Hull axis error, median (°)</td><td>4 <span class='small'>(3–6)</span></td><td>11 <span class='small'>(7–17)</span></td></tr></tbody></table></div>
-  <p>Large ships hold up on new water: Pd for ships of 50&nbsp;m and more is 0.94 on the locked set against 0.95 on the test set,
+  <p>Large ships hold up on the locked set: Pd for ships of 50&nbsp;m and more is 0.94 on the locked set against 0.95 on the test set,
   at the same false-alarm rate. Overall Pd is lower (0.69) because more of its AIS ships are boats under 25&nbsp;m (about 28% against 21%), and fewer of those are found (about 0.20 against 0.36). Length is the weakest KPI: blobs run long
-  (bias 34&nbsp;m on the locked set), which a learned length estimator addresses (second study below).</p>
+  (bias 34&nbsp;m on the locked set). In the second study, learned length estimators did better (mean absolute error
+  19–27&nbsp;m against 44&nbsp;m for the CFAR blob, on Danish chips).</p>
   <p><b>Position uncertainty.</b> Every detection now carries a 90% ellipse aligned with the satellite track, 473&nbsp;m along and 138&nbsp;m across,
   fitted on 339 matched ships in the training passes. The long axis allows for the azimuth shift of a moving ship (equivalent to 8&nbsp;kn toward the radar).
   On passes it was not fitted on, it contains 90% of AIS positions on the locked set.</p>
   <p class='small'><b>Scored twice, same detector.</b> The first scoring of the locked set exposed a fault in the truth, not the detector: AIS had been extracted only inside each area's box, so a ship that had just left the box stayed in the truth at its last fix and counted as a miss. AIS is now extracted 0.1° beyond the box; the truth was rebuilt for every set and every result re-run, with no detector setting changed. The first scoring gave Pd 0.58 at k&nbsp;=&nbsp;5 on the locked set (342 ships, including the stale ones); it is kept alongside this one.</p>
-  <p><b>How many unmatched targets are vessels?</b> A stratified random sample of 128 of the 402 unmatched targets was labelled from the radar chips alone, without AIS, by Claude, an AI model rather than a trained analyst. Of those judged either way, about 64% look like vessels (55%–73%); 47 were too small or faint to call, and counting all of those either way puts the share between 38% and 91%. So the false-alarm rate likely includes many real vessels without AIS. A trained analyst's review would firm this up.</p>
+  <p><b>How many unmatched targets are vessels?</b> A stratified random sample of 128 of the 402 unmatched targets on the test and locked passes was labelled from the radar chips alone, without AIS, by Claude, an AI model rather than a trained analyst. Of those judged either way, about 64% look like vessels (55%–73%); 47 were too small or faint to call, and counting all of those either way puts the share between 38% and 91%. So the false-alarm rate likely includes many real vessels without AIS. A trained analyst's review would firm this up.</p>
   <p class="small">Truth is AIS: vessels without it count as false alarms, so the false-alarm rate is an upper bound. Breakdowns by area, wind, wave height and incidence angle
   (nearest NOAA buoy within 60&nbsp;km) are in the repository's KPI report. The hull axis has a 180° ambiguity: the radar gives orientation, not direction of travel.</p>
 </section>
@@ -171,16 +178,16 @@
   <b>Locked passes.</b> Both detectors find 88 of 112 ships. Against production k&nbsp;=&nbsp;5, v6 has 38% fewer false alarms
   (pass bootstrap 13% to 61%), but all of it comes from Massachusetts Bay, and against CFAR re-thresholded to find the same ships
   the cut is only 15% (-18% to 46%). On the locked passes, v6 shows <b>no demonstrated advantage</b> over CFAR set to the same recall.</p>
-  <div class="scroll"><table><thead><tr><th>Locked area</th><th>v6 ships / false alarms</th><th>CFAR k&nbsp;=&nbsp;5</th><th>CFAR at equal recall (k)</th><th>Exposure</th></tr></thead><tbody><tr><td>Massachusetts Bay</td><td>39 / 22</td><td>40 / 77</td><td>6.75: 39 / 16</td><td>unseen water</td></tr><tr><td>Chesapeake entrance</td><td>49 / 65</td><td>48 / 64</td><td>4.75: 49 / 81</td><td>shares about 22 km² with a development area</td></tr><tr><td>Both</td><td>88 / 87</td><td>88 / 141</td><td>5.25: 88 / 102</td><td></td></tr></tbody></table></div>
+  <div class="scroll"><table><thead><tr><th>Locked area</th><th>v6 ships / false alarms</th><th>CFAR k&nbsp;=&nbsp;5</th><th>CFAR at equal recall (k)</th><th>Exposure</th></tr></thead><tbody><tr><td>Massachusetts Bay (Boston)</td><td>39 / 22</td><td>40 / 77</td><td>6.75: 39 / 16</td><td>unseen water</td></tr><tr><td>Chesapeake entrance</td><td>49 / 65</td><td>48 / 64</td><td>4.75: 49 / 81</td><td>shares about 22 km² with a development area</td></tr><tr><td>Both</td><td>88 / 87</td><td>88 / 141</td><td>5.25: 88 / 102</td><td></td></tr></tbody></table></div>
   <p><b>A pre-registered fresh test.</b> To settle it, three new areas (Delaware Bay entrance, Charleston approaches, Columbia River entrance), the pass rule and three endpoints
-  were committed, and both detectors frozen by fingerprint, before any of their data was fetched; the 36 passes were then scored once.</p>
+  were committed, and both detectors frozen by fingerprint, before any of their data was fetched; the 36 passes were then scored once (a first run stopped on a division by zero before computing any metric; the fix is commit <code>f551fd5</code>).</p>
   <div class="scroll"><table><thead><tr><th>Fresh test, 36 passes, 105 ships</th><th>v6</th><th>CFAR</th></tr></thead><tbody><tr><td>Pd at 1 / 5 / 10 FA per 1,000 km²</td><td>0.67 / 0.76 / 0.79</td><td>0.68 / 0.78 / 0.80</td></tr><tr><td>At the operating point: Pd, FA per 1,000 km²</td><td>0.78, 7.7</td><td>0.81, 17.1 (k&nbsp;=&nbsp;5)</td></tr><tr><td>False alarms at equal recall</td><td>135</td><td><b>85</b> (k&nbsp;=&nbsp;6.5)</td></tr></tbody></table></div>
   <p>Pd at 5&nbsp;FA: -0.019 (interval -0.053 to +0.021), no difference. False alarms against CFAR at equal recall:
   59% <b>more</b> (interval for the cut -116% to -15%). Under the rule fixed in advance, <b>v6 is worse on fresh water</b>.
   Its edge over production came from production's k&nbsp;=&nbsp;5 being a loose operating point for much of this water, not from the classifier: CFAR alone, set to the same recall, does better.</p>
   <p><b>What changed.</b> v6 is not promoted. The gate gained a fifth rule: a learned candidate's false alarms may not exceed CFAR re-thresholded to find as many ships on the same passes.
-  On the test passes v6 still passes it, so only the fresh test caught this; its verdict is recorded on v6 in the registry. Next: a fixed CFAR threshold of its own deserves the same kind of test.</p>
-  <p class="small">Only Massachusetts Bay is unseen water: the Chesapeake entrance shares about 22&nbsp;km² of scored water with Hampton Roads, and New York Lower Bay is left out because it overlaps the
+  On the test passes v6 still passes it, so only the fresh test caught this; its verdict is recorded on v6 in the registry. The next test, below, applied the same protocol to a fixed CFAR threshold.</p>
+  <p class="small">Only Massachusetts Bay (Boston) is unseen water: the Chesapeake entrance shares about 22&nbsp;km² of scored water with Hampton Roads, and New York Lower Bay is left out because it overlaps the
   New York–New Jersey development area (one of its scenes is a development pass). Equal-recall CFAR thresholds were picked after the fact, for reference.
   The test passes were looked at by this line of work several times on 3&nbsp;Nov: once by the Danish YOLO, once by an earlier classifier built on stale labels, and twice by this one
   (the first with the wrong truth domain). Only the last is reported; the full chronology is in the repository README.</p>
@@ -231,10 +238,10 @@
   <p>A check on Canadian water, where no historical AIS is available. Production CFAR ran on 12 Sentinel-1 passes (HH/HV, November 2025 to October 2026) over
   the Jeanne d'Arc Basin fields, about 350&nbsp;km east-southeast of St.&nbsp;John's. The six November–April passes built the map with no list of structures.
   The installation list (the C-NLOPB layer, plus the West White Rose platform from the provincial layer), the pass rule and the success criterion were committed
-  before any radar data was fetched (a local commit; the earlier tests were timestamped on GitHub). Found means a map spot within 500&nbsp;m, the safety-zone radius.</p>
+  before any radar data was fetched (a local commit, not pushed before scoring; Tests 1 to 5 were pushed to GitHub before scoring). Found means a map spot within 500&nbsp;m, the safety-zone radius.</p>
   <div class="scroll"><table><thead><tr><th>Installation</th><th>Listed by</th><th>Nearest map spot</th><th>Result</th><th>Detected within 500&nbsp;m of the listed point</th></tr></thead>
   <tbody><tr><td>Hibernia</td><td>C-NLOPB</td><td>85&nbsp;m</td><td><b>found</b></td><td>12 of 12</td></tr><tr><td>Hebron</td><td>C-NLOPB</td><td>57&nbsp;m</td><td><b>found</b></td><td>12 of 12</td></tr><tr><td>Terra Nova FPSO</td><td>C-NLOPB</td><td>134&nbsp;m</td><td><b>found</b></td><td>12 of 12</td></tr><tr><td>SeaRose FPSO</td><td>C-NLOPB</td><td>3,673&nbsp;m</td><td><b>not found</b></td><td>0 of 12</td></tr><tr><td>West White Rose (installed 2025)</td><td>NL government</td><td>78&nbsp;m</td><td><b>found</b></td><td>12 of 12</td></tr></tbody></table></div>
-  <p><b>3 of 4</b> listed installations were found, and West White Rose, which the regulator's layer does not list yet, was found too.
+  <p><b>3 of 4</b> listed installations were found, short of the pre-registered bar of all four; West White Rose, which the regulator's layer does not list yet, was found too.
   The map has no other spots. On the six later passes, 27% of CFAR detections fall on a spot, which is what the map would take off a dark list.</p>
   <figure class="wide"><img src="img/grand_banks_whiterose.png" alt="Left: the Jeanne d'Arc Basin with CFAR detections, map spots on Hibernia, Hebron, Terra Nova and West White Rose. Right: SeaRose's radar returns cluster 2 km south of its listed point, on its independent positions" loading="lazy">
   <figcaption>Left: map spots (blue) against the listed installations (red, 500&nbsp;m). Right: SeaRose's returns on all 12 passes (orange) sit beside two independent
@@ -243,7 +250,7 @@
   61&nbsp;m from Wikipedia's position for the field and 209&nbsp;m from the World Ports Directory's,
   but 1,999&nbsp;m from the regulator's point, which agrees on longitude and differs by about 1′05″ of latitude. It also weathervanes on its turret:
   its return moves up to 382&nbsp;m between passes, more than the map's 100&nbsp;m recurrence radius. Rebuilt with a 300&nbsp;m radius (about one hull length), the map puts a spot
-  40&nbsp;m from SeaRose and adds no false spot, but that radius was chosen after seeing this data, so it is the design for the next test, not a result.
+  40&nbsp;m from SeaRose and none away from the installations, but that radius was chosen after seeing this data, so it is the design for the next test, not a result.
   Two lessons: size the recurrence radius to the largest swing (a moored FPSO), and treat a published position as something to check.</p>
 </section>
 
@@ -277,12 +284,12 @@
   <p>GROW&nbsp;=&nbsp;1.5 was chosen by a rule fixed in advance (the most sensitive setting adding at most 1 false alarm per 1,000&nbsp;km²): it flags 60%
   of injected vessels (31% of small returns, 66% of medium, 84% of large) for
   0.94 added false alarms per 1,000&nbsp;km². Of the 4 AIS ships that actually sat within 150&nbsp;m of a structure, each scored as if it alone were dark,
-  2 were flagged. An independent code review (Codex, three passes) found twelve problems in this scorer before the fourth test was frozen; fixing them lowered recovery from 73% to 60%.</p>
+  2 were flagged. An AI code review (OpenAI Codex, three passes) found twelve problems in this scorer before the fourth test was frozen; fixing them lowered recovery from 73% to 60%.</p>
 </section>
 
 <section>
   <h2>Fourth pre-registered test: structure-rich new water</h2>
-  <p class="note">Rules, areas and pass list fixed <mark class="ts">5 Nov 2026, 00:21 UTC (4 Nov, 20:51 NST)</mark> and pushed to GitHub (commit <code>82f9dbb</code>, private repository) before any of the radar or AIS data was fetched. Scored once, <mark class="ts">5 Nov 2026, 01:51 UTC (4 Nov, 22:21 NST)</mark> (commit <code>e0a83ab</code>).</p>
+  <p class="note">Rules, areas and pass list fixed <mark class="ts">5 Nov 2026, 00:21 UTC (4 Nov, 20:51 NST)</mark> and pushed to GitHub (commit <code>82f9dbb</code>) before any of the radar or AIS data was fetched. Scored once, <mark class="ts">5 Nov 2026, 01:51 UTC (4 Nov, 22:21 NST)</mark> (commit <code>e0a83ab</code>).</p>
   <p>Five new areas chosen for their structures: four off Louisiana with 56 standing federal platforms, and the
   Santa Barbara Channel, whose platforms are not on the federal Gulf list the pipeline uses, so the map has to find them itself. The map drops spots where an AIS ship sat;
   the alongside flag runs at GROW&nbsp;=&nbsp;1.5, both fixed beforehand. 30 July–December passes, 129 AIS ships, 12,306&nbsp;km².</p>
@@ -300,7 +307,7 @@
 
 <section>
   <h2>Fifth pre-registered test: a calibrated flag in dense platform fields</h2>
-  <p class="note">Rules, areas and pass list fixed <mark class="ts">5 Nov 2026, 03:57 UTC (5 Nov, 00:27 NST)</mark> and pushed to GitHub (commit <code>27dc282</code>, private repository) before any of the radar or AIS data was fetched. Scored once, <mark class="ts">5 Nov 2026, 05:03 UTC (5 Nov, 01:33 NST)</mark> (commit <code>de50f3b</code>).</p>
+  <p class="note">Rules, areas and pass list fixed <mark class="ts">5 Nov 2026, 03:57 UTC (5 Nov, 00:27 NST)</mark> and pushed to GitHub (commit <code>27dc282</code>) before any of the radar or AIS data was fetched. Scored once, <mark class="ts">5 Nov 2026, 05:03 UTC (5 Nov, 01:33 NST)</mark> (commit <code>de50f3b</code>).</p>
   <p>The fourth test's flag failed on Main Pass's dense platform field, so the flag was recalibrated. In each area, structures with a neighbour within 500&nbsp;m and isolated
   ones each get their own threshold, or are switched off, chosen from the area's own January–June passes so the flag adds at most 1 false alarm per 1,000&nbsp;km².
   On the ten areas used before, this met both bars, narrowly. The test: the five densest federal platform fields in a scan of the Gulf.</p>
@@ -311,7 +318,7 @@
     1.04 false alarms per 1,000&nbsp;km² (bar 1.0). Even the fixed setting caught only 32%, with 2.65 added:
     clustered platforms change too much from pass to pass for a changed-signature rule. AIS ships beside a structure, scored as if dark: 3 of 19 flagged.</li>
     <li><b>Map: no demonstrated improvement.</b> It found 2 spots in all five fields and cut false alarms by 9%: almost every structure there is on the federal
-    list that production already leaves out, so there was little left to find. The map earns its keep where structures are not listed (Main Pass's state-water returns, Mobile Bay, the Grand Banks).</li>
+    list that production already leaves out, so there was little left to find. The map earns its keep where structures are not listed, as in Main Pass in the fourth test and on the Grand Banks.</li>
   </ul>
   <p>Where this leaves the flag: in dense fields, many of its "false alarms" are probably small service boats without AIS, real vessels that AIS truth counts against it.
   Progress there needs a different kind of truth, such as analyst review in the console, not another threshold.</p>
@@ -323,9 +330,9 @@
   <span class="sw" style="--c:#ff4d4f"></span> no AIS match (dark candidate), <span class="sw" style="--c:#4dabf7"></span> at a BOEM platform.
   These are the same status colours as the Harbour Twin viewer.</p>
   <div class="grid3">
-    <figure><img src='img/qc_lalb.jpg' alt='Los Angeles-Long Beach radar image with ringed targets' loading='lazy'><figcaption><b>Los Angeles–Long Beach</b>, 2024-04-20 01:50 UTC: 26 ais, 12 dark; 4 AIS vessels on open water not detected (small white rings).</figcaption></figure>
-    <figure><img src='img/qc_puget.jpg' alt='Puget Sound radar image with ringed targets' loading='lazy'><figcaption><b>Puget Sound (Seattle–Tacoma)</b>, 2024-07-18 02:02 UTC: 18 ais, 10 dark; 17 AIS vessels on open water not detected (small white rings).</figcaption></figure>
-    <figure><img src='img/qc_gulf.jpg' alt='Gulf of Mexico radar image with ringed targets and platforms' loading='lazy'><figcaption><b>Gulf of Mexico platforms (off Louisiana)</b>, 2024-10-12 00:02 UTC: 8 ais, 27 dark, 30 platform; 0 AIS vessels on open water not detected (small white rings).</figcaption></figure>
+    <figure><img src='img/qc_lalb.jpg' alt='Los Angeles-Long Beach radar image with ringed targets' loading='lazy'><figcaption><b>Los Angeles–Long Beach</b>, 2024-04-20 01:50 UTC: 26 ais, 12 dark; 4 AIS vessels on open water not detected (small white rings). Counts are for this image, whose water mask differs slightly from the scored one, so they can differ by one from the pass table.</figcaption></figure>
+    <figure><img src='img/qc_puget.jpg' alt='Puget Sound radar image with ringed targets' loading='lazy'><figcaption><b>Puget Sound (Seattle–Tacoma)</b>, 2024-07-18 02:02 UTC: 18 ais, 10 dark; 17 AIS vessels on open water not detected (small white rings). Counts are for this image, whose water mask differs slightly from the scored one, so they can differ by one from the pass table.</figcaption></figure>
+    <figure><img src='img/qc_gulf.jpg' alt='Gulf of Mexico radar image with ringed targets and platforms' loading='lazy'><figcaption><b>Gulf of Mexico platforms (off Louisiana)</b>, 2024-10-12 00:02 UTC: 8 ais, 27 dark, 30 platform; 0 AIS vessels on open water not detected (small white rings). Counts are for this image, whose water mask differs slightly from the scored one, so they can differ by one from the pass table.</figcaption></figure>
   </div>
   <p class="small">The Gulf has 25 AIS ships over four passes, too few to draw conclusions about Pd there. Its unmatched targets cluster in the platform fields.
   Some are likely supply vessels alongside platforms, or structures more than 150&nbsp;m from their listed position. They have not been reviewed.</p>
@@ -338,7 +345,7 @@
   and a correlation of 0.84. The long axis is within 20° of the AIS heading for 77% of ships, with a median error of 4°.</p>
   <div class='scroll'><table><thead><tr><th>Area</th><th>Matched ships with length</th><th>Length bias (m)</th><th>Median abs. length error (m)</th><th>Relative</th><th>Correlation</th><th>Ships with heading</th><th>Median axis error</th><th>Within 20°</th></tr></thead><tbody><tr><th scope='row'>All areas</th><td>182</td><td>9</td><td>16</td><td>11%</td><td>0.84</td><td>175</td><td>4°</td><td>77%</td></tr><tr><th scope='row'>Puget Sound</th><td>66</td><td>13</td><td>15</td><td>13%</td><td>0.83</td><td>61</td><td>5°</td><td>70%</td></tr><tr><th scope='row'>LA–Long Beach</th><td>92</td><td>-0</td><td>16</td><td>9%</td><td>0.87</td><td>90</td><td>3°</td><td>88%</td></tr><tr><th scope='row'>Gulf of Mexico</th><td>24</td><td>27</td><td>29</td><td>83%</td><td>0.66</td><td>24</td><td>17°</td><td>54%</td></tr></tbody></table></div>
   <p><b>Icebergs.</b> For St. John's, an iceberg-versus-ship score combines the cross- to co-polarised ratio, compactness and size. It is <b>not validated</b>:
-  no official iceberg sightings with clear terms overlap these scenes. On the 20 October 2026 St. John's pass it rates 8 of 12 targets ship-like
+  no official iceberg sightings with clear terms overlap these scenes. On a St. John's scene from 20 October 2026 (screened separately, not a live pass) it rates 8 of 12 targets ship-like
   and 0 iceberg-like, which is plausible in October but is not a test.</p>
   <p><b>Platforms.</b> 120 Gulf detections at k&nbsp;=&nbsp;5 fall within 150&nbsp;m of a platform standing on the scene date (BOEM).
   Without that list they would have counted as dark vessels.</p>
@@ -346,7 +353,7 @@
 
 <section>
   <h2>Second study: Danish waters at scale</h2>
-  <p>A larger study, built the same month, uses the Danish Maritime Authority's complete AIS feed: 72 Sentinel-1 frames over the Danish straits,
+  <p>A larger study, built in October 2026 in a separate, private repository, uses the Danish Maritime Authority's AIS: 72 Sentinel-1 frames over the Danish straits,
   62 over the Danish North Sea, and 94 frames from May 2026 held out until every setting was frozen.
   Intervals are 95% bootstraps that resample whole Sentinel-1 passes.</p>
   <h3>Matching that follows the radar physics</h3>
@@ -366,7 +373,7 @@
   <p>Across 70 autumn frames, detecting on VH instead of VV <b>halves the unmatched list</b>, from 27.1 to 13.6
   per 1,000&nbsp;km² (difference -13.5, interval -20.9 to -7.0),
   at similar recall (80.4% against 79.8%), counted before any static-structure filter. On the windiest winter passes (median wind 10&nbsp;m/s)
-  the gap is larger: 13.5 against 63.4. Sea clutter is far weaker in cross-pol than ship returns.</p>
+  the gap is larger: VH 13.5 against VV 63.4 per 1,000&nbsp;km². Sea clutter is far weaker in cross-pol than ship returns.</p>
   <h3>Three regions and seasons</h3>
   <div class='scroll'><table><thead><tr><th>Region</th><th>Frames</th><th>Open water km²</th><th>AIS vessels</th><th>Recall, all</th><th>Under 15&nbsp;m</th><th>30–60&nbsp;m</th><th>Over 60&nbsp;m</th><th>Unmatched per 1,000&nbsp;km², raw</th></tr></thead><tbody><tr><th scope='row'>Danish straits, Sep–Oct 2026</th><td>72</td><td>355k</td><td>3,646</td><td>81% <span class='muted'>[76%, 84%]</span></td><td>47% <span class='muted'>[38%, 56%]</span></td><td>89% <span class='muted'>[84%, 93%]</span></td><td>89% <span class='muted'>[84%, 92%]</span></td><td>13.6</td></tr><tr><th scope='row'>Danish North Sea, Sep–Oct 2026</th><td>62</td><td>297k</td><td>838</td><td>92% <span class='muted'>[88%, 94%]</span></td><td>59% <span class='muted'>[41%, 74%]</span></td><td>98% <span class='muted'>[95%, 100%]</span></td><td>94% <span class='muted'>[89%, 97%]</span></td><td>36.0</td></tr><tr><th scope='row'>Danish straits, May 2026 (held out)</th><td>94</td><td>402k</td><td>4,412</td><td>72% <span class='muted'>[68%, 75%]</span></td><td>40% <span class='muted'>[36%, 44%]</span></td><td>86% <span class='muted'>[81%, 90%]</span></td><td>86% <span class='muted'>[82%, 90%]</span></td><td>22.6</td></tr></tbody></table></div>
   <p class="small">The CFAR detector and every threshold were frozen before May was processed. May recall is lower mainly because the leisure season doubles the number of
@@ -382,7 +389,8 @@
   Sentinel-1 features are the weakest, below frozen ImageNet. Their pretraining corpus is mostly land, so here their value is as an initialisation, not as off-the-shelf
   embeddings. On thermal-noise-subtracted VH chips, which match how that corpus was processed, fine-tuned SoftCon reaches
   0.55 ± 0.05.</p>
-  <p class="small">Learned ship detectors from that study are not reported here. They will be retrained from AIS-labelled Sentinel-1 only (next steps).</p>
+  <p class="small">That study's LS-SSDD-initialised ship detectors are not reported here; they will be retrained from AIS-labelled Sentinel-1 only (next steps).
+  Its COCO-initialised YOLO appears above only as a comparison for v6.</p>
 </section>
 
 <section>
@@ -396,24 +404,27 @@
 
 <section>
   <h2>Live operation</h2>
-  <p>The same code runs as a service for Vancouver and St. John's harbours. Timers record AIS around each pass, and a processor checks every 6&nbsp;hours for newly published scenes.
-  For each pass it writes products, alerts and a run-log line with the time from sensing to report. Upcoming passes:</p>
-  <ul><li><b>Vancouver harbour</b>: Sat 24 Oct 23:32 NDT (02:02 UTC), Sentinel-1C, relative orbit 137</li><li><b>St. John&#x27;s harbour</b>: Mon 26 Oct 07:11 NDT (09:41 UTC), Sentinel-1C, relative orbit 156</li><li><b>St. John&#x27;s harbour</b>: Tue 27 Oct 07:03 NDT (09:33 UTC), Sentinel-1D, relative orbit 83</li><li><b>St. John&#x27;s harbour</b>: Wed 28 Oct 18:51 NDT (21:21 UTC), Sentinel-1D, relative orbit 105</li></ul>
+  <p>The same code is built to run as a service for Vancouver and St. John's harbours. Timers record AIS around each pass, and a processor checks every 6&nbsp;hours for newly published scenes.
+  For each pass it writes products, alerts and a run-log line with the time from sensing to report. It processed one live pass, Vancouver on 22 October 2026 (above),
+  and is not running now. AIS was recorded around two later passes, but neither was processed.</p>
+  <p>The passes it had scheduled next:</p><ul><li><b>Vancouver harbour</b>: Sat 24 Oct 23:32 NDT (25 Oct 02:02 UTC), Sentinel-1C, relative orbit 137: AIS recorded, not processed</li><li><b>St. John&#x27;s harbour</b>: Mon 26 Oct 07:11 NDT (26 Oct 09:41 UTC), Sentinel-1C, relative orbit 156: AIS recorded, not processed</li><li><b>St. John&#x27;s harbour</b>: Tue 27 Oct 07:03 NDT (27 Oct 09:33 UTC), Sentinel-1D, relative orbit 83: nothing recorded</li><li><b>St. John&#x27;s harbour</b>: Wed 28 Oct 18:51 NDT (28 Oct 21:21 UTC), Sentinel-1D, relative orbit 105: nothing recorded</li></ul>
   <p class="small">Latency today is dominated by the data source. Planetary Computer publishes terrain-corrected Sentinel-1 hours to days after sensing.
-  For near-real-time use the same pipeline would read Copernicus NRT products or a commercial feed, where detection itself takes seconds (about 5&nbsp;s for a 300&nbsp;km² harbour; the 52&nbsp;s above includes reading the scene).</p>
+  For near-real-time use the same pipeline would read Copernicus NRT products or a commercial feed, and the 52&nbsp;s of processing on the live pass, which includes reading the scene, would follow the scene's arrival.</p>
 </section>
 
 <section>
   <h2>How a change reaches the live service</h2>
   <p>Every validation run is tracked in MLflow with the detector settings, the operating metrics, the results files and the git commit.
   Each detector configuration is registered as a version of one model, loadable and runnable from the registry.
-  A version becomes <em>production</em> only through a gate: Pd at 5&nbsp;FA may not drop by more than 0.02,
+  A version becomes <em>production</em> only through a gate, or through an override recorded in the registry (version 2, below).
+  The gate: Pd at 5&nbsp;FA may not drop by more than 0.02,
   false alarms may not rise by more than 10%, at least 95% of the ships must still be scored
   (a wider mask must not buy Pd by testing less), and Pd by chance must stay under 0.06.
   Promotion writes the production settings to a file the live service reads, and every processed pass records the version that produced it.
   The decisions so far, replayed through the gate:</p>
   <div class='scroll'><table><thead><tr><th>Version</th><th>Detector</th><th>Coastal buffer</th><th>Pd at 5 FA</th><th>FA at operating point</th><th>Ships scored</th><th>Pd by chance</th><th>Decision</th><th>Gate</th></tr></thead><tbody><tr><td>1</td><td>CFAR</td><td>40&nbsp;m</td><td>0.54</td><td>48.7</td><td>272</td><td>0.08</td><td>superseded</td><td class='small why'>first production version</td></tr><tr><td>2</td><td>CFAR</td><td>150&nbsp;m</td><td>0.63</td><td>13.1</td><td>226</td><td>0.04</td><td><b>production</b></td><td class='small why'>scores 83% of the ships (rule: at least 95%); approved anyway: the ships no longer scored lie within 150 m of the coast, where most unmatched targets at 40 m were docks and shore returns</td></tr><tr><td>3</td><td>CFAR</td><td>75&nbsp;m</td><td>0.64</td><td>20.1</td><td>244</td><td>0.04</td><td>rejected</td><td class='small why'>false alarms +53% (rule: at most +10%)</td></tr><tr><td>4</td><td>CFAR</td><td>300&nbsp;m</td><td>0.66</td><td>10.6</td><td>201</td><td>0.03</td><td>rejected</td><td class='small why'>scores 89% of the ships (rule: at least 95%)</td></tr><tr><td>5</td><td>learned</td><td>150&nbsp;m</td><td>0.65</td><td>16.0</td><td>226</td><td>0.04</td><td>rejected</td><td class='small why'>false alarms +22% (rule: at most +10%); the live service cannot run this detector type yet</td></tr><tr><td>6</td><td>learned</td><td>150&nbsp;m</td><td>0.71</td><td>8.1</td><td>226</td><td>0.03</td><td>failed fresh test</td><td class='small why'>passes every rule, including equal recall; the live service cannot run this detector type yet; pre-registered fresh test: worse than CFAR at equal recall</td></tr></tbody></table></div>
-  <p class="small">Unit tests, including the gate and a registry round trip, run in CI on every change (Python 3.11 and 3.12).
+  <p class="small">Version 5 is registered from training seed 1 (the best on the held-out passes); the learned-detector section above gives the mean of the three seeds.
+  Unit tests, including the gate and a registry round trip, run in CI on every change (Python 3.11 and 3.12).
   The full validation needs the Sentinel-1 cases and runs locally before a candidate is registered.
   The learned detectors are versioned in the same registry and judged by the same gate, which since 4&nbsp;Nov also compares a learned candidate with CFAR re-thresholded to the same recall; promoting one also needs the live service to run it.</p>
 </section>
@@ -425,7 +436,7 @@
     <li><b>Small craft.</b> At 10&nbsp;m pixels, boats under 25&nbsp;m are often missed. That is a sensor limit as much as a detector one.</li>
     <li><b>Near the coast.</b> Ships within 150&nbsp;m of the mapped coast (berths, marinas) are outside the scored area.</li>
     <li><b>Sample size.</b> 12 test passes (226 ships) and 36 locked passes give useful but wide uncertainty, especially in the Gulf (25 ships). All are US waters in 2024, in VV+VH; HH/HV over sea ice is untested.</li>
-    <li><b>Baseline detector.</b> Detection numbers are for CFAR. No learned ship detector is claimed yet; the learned models shown are vessel type and length classifiers.</li>
+    <li><b>Baseline detector.</b> Production detection numbers are for CFAR. Two learned detectors are reported above, and neither was promoted: one failed the gate, the other a pre-registered fresh test.</li>
   </ul>
 </section>
 
@@ -433,15 +444,13 @@
   <h2>Next steps</h2>
   <p>Done so far (phase 1): operator KPIs with intervals, a locked test set, a position ellipse on every detection, and breakdowns by sea state and incidence angle. Planned:</p>
   <p><b>Phase 2, operational capability.</b> AIS mismatch flags (an AIS position with no radar return while an unexplained target sits within plausible range);
-  heading from the wake to resolve the 180° ambiguity; length and vessel type for unmatched targets; linking unmatched contacts across passes; wind-adaptive thresholds.</p>
+  heading from the wake to resolve the 180° ambiguity; length and vessel type for unmatched targets; linking unmatched contacts across passes, as the Danish study does; wind-adaptive thresholds.</p>
   <p><b>Phase 3, deployability.</b> Near-real-time Sentinel-1 with calibration in the pipeline, aiming at under an hour from sensing to alert;
   standard track and overlay formats alongside GeoJSON and KML; an offline container with a software bill of materials, signed images and an audit log; RADARSAT Constellation Mission ingestion, subject to access terms.</p>
   <p>Further detector work:</p>
   <ol>
-    <li><b>Learned detector, round two.</b> More AIS-labelled passes, analyst decisions from the console as cleaner labels, and a full-image detector so recall is not capped by the CFAR candidates.
-    No China-origin datasets or models are used.</li>
-    <li><b>Discrimination.</b> Platforms and fixed structures, azimuth ambiguities and sidelobes; iceberg-versus-ship with labelled icebergs.</li>
-    <li><b>Faster data.</b> Near-real-time Sentinel-1 for the live harbours, with latency reported from sensing to alert.</li>
+    <li><b>Learned detector, round three.</b> More AIS-labelled passes, analyst decisions from the console as cleaner labels, and a full-image detector so recall is not capped by the CFAR candidates.</li>
+    <li><b>Discrimination.</b> Azimuth ambiguities and sidelobes; iceberg-versus-ship with labelled icebergs; analyst review of the structure map's spots.</li>
   </ol>
 </section>
 
@@ -454,16 +463,31 @@
 <section class="sources">
   <h2>Data and licences</h2>
   <ul>
-    <li>Contains modified Copernicus Sentinel data (2024, 2026), terrain-corrected Sentinel-1 (RTC) via Microsoft Planetary Computer.</li>
-    <li>AIS 2024: Martin, Brass, Dornback and Fontenault (2025), Nationwide Automatic Identification System 2024, NOAA Office for Coastal Management (MarineCadastre), CC0 1.0. Live AIS: aisstream.io.</li>
-    <li>Water, piers and bridges: Overture Maps Foundation (includes OpenStreetMap data, ODbL).</li>
-    <li>Danish study: AIS from the Danish Maritime Authority; structures from OpenStreetMap (ODbL); winter wind from ERA5 via Open-Meteo (CC BY 4.0);
-    Sentinel-1 backbones from SSL4EO-S12 via TorchGeo.</li>
-    <li>Offshore platforms: BOEM Platform Structures (data.boem.gov), U.S. Government data.</li>
+    <li>Contains modified Copernicus Sentinel data (2024–2026). Sentinel-1 RTC from Microsoft Planetary Computer (processed by Catalyst), licensed by Microsoft under CC BY 4.0
+    (<a href="https://creativecommons.org/licenses/by/4.0/">https://creativecommons.org/licenses/by/4.0/</a>); images here are modified (downsampled, contrast-stretched, annotated).</li>
+    <li>AIS 2024: Office for Coastal Management, 2026: Nationwide Automatic Identification System 2024, NOAA InPort item 73064
+    (<a href="https://www.fisheries.noaa.gov/inport/item/73064">fisheries.noaa.gov/inport/item/73064</a>). AIS source: U.S. Coast Guard Navigation Center. U.S. Government data, no access constraints.</li>
+    <li>Live AIS: aisstream.io, which publishes no data licence: only counts and one ringed image are kept, never position data or vessel identities.</li>
+    <li>Danish-waters study (a separate, private repository; aggregates only here): AIS from the Danish Maritime Authority; structures from OpenStreetMap (ODbL);
+    winter wind from ERA5 via Open-Meteo (CC BY 4.0); Sentinel-1 backbones from SSL4EO-S12 via TorchGeo.</li>
+    <li>Water, piers and bridges: Overture Maps Foundation (includes OpenStreetMap data, ODbL; © OpenStreetMap contributors). The open-water mask is derived from them by
+    <code>mtc/case.py</code> and Harbour Twin's water mask.</li>
+    <li>Offshore platforms mapped only in OpenStreetMap (the Mobile Bay counts above): OpenStreetMap via the Overpass API (ODbL).</li>
+    <li>Federal offshore platforms: BOEM Platform Structures (data.boem.gov), U.S. Government data.</li>
+    <li>Grand Banks installations: Installations layer of the Canada-Newfoundland and Labrador Offshore Energy Regulator (C-NLOER, formerly C-NLOPB), for illustrative and reference
+    purposes only; West White Rose from the Government of Newfoundland and Labrador Energy Branch installation layer.</li>
     <li>Protected areas for alerts: Canadian Protected and Conserved Areas Database (ECCC). Contains information licensed under the Open Government Licence – Canada.</li>
+    <li>Wind and wave height for the KPI breakdowns: NOAA National Data Buoy Center buoys, U.S. Government data.</li>
+    <li>Base map in the console screenshots: © OpenStreetMap contributors.</li>
+    <li>Learned detector v6 starts from the SSL4EO-S12 SoftCon Sentinel-1 ResNet-50 weights (Wang, Albrecht and Zhu, 2024; CC BY 4.0), loaded through TorchGeo.
+    The fine-tuned weights are not included.</li>
+    <li>Danish YOLO comparison: two historical scripts (<code>tools/validate_learned.py</code>, <code>tools/compare_on_dev.py</code>) import Ultralytics YOLO (AGPL-3.0) from a separate environment.
+    Ultralytics and the YOLO weights are not included and are not needed for anything else.</li>
+    <li>No datasets or models produced by Chinese institutions are used. The Danish YOLO's input scaling keeps one number from LS-SSDD-v1.0 (its 57&nbsp;DN open-sea level)
+    as a convention; no LS-SSDD imagery or weights are used (<code>mtc/yolo_input.py</code>).</li>
   </ul>
 </section>
 </main>
-<footer><div class="wrap">Shivaji Patil · <a href="mailto:shivaji@shivajipatil.com">shivaji@shivajipatil.com</a> · St. John's, NL · October 2026</div></footer>
+<footer><div class="wrap">Shivaji Patil · <a href="mailto:shivaji@shivajipatil.com">shivaji@shivajipatil.com</a> · St. John's, NL · October–November 2026</div></footer>
 </body>
 </html>
