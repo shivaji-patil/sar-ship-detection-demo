@@ -27,7 +27,7 @@
     </div>
     <p class="note">Baseline: classical constant false-alarm rate (CFAR) detection. Truth: AIS, which misses vessels without transponders, so false-alarm figures are upper bounds.</p>
     <p class="cta"><a href="brief.pdf">Two-page brief (PDF)</a> <a href="note.pdf">Technical note: six pre-registered tests (PDF)</a> <a href="https://github.com/shivaji-patil/maritime-target-correlation">Code on GitHub</a></p>
-    <p class="note">Last updated <mark class="ts">6 Nov 2026, 02:43 UTC (5 Nov, 23:13 NST)</mark>.</p>
+    <p class="note">Last updated <mark class="ts">6 Nov 2026, 03:06 UTC (5 Nov, 23:36 NST)</mark>.</p>
   </div>
 </header>
 <main class="wrap">
@@ -352,8 +352,13 @@
     Jotun's listed point is about 600&nbsp;m from the Norwegian Mapping Authority's position, where both radii found it: like SeaRose, a published position that is off.</li>
     <li><b>The cost: 3 places away from any listed installation</b> (0.13 per 1,000&nbsp;km²; the bar was 0.1, which here allows 2).
     One, about 3&nbsp;km from Heidrun, came back on 4 of the 6 May–October passes, so something unlisted stands or keeps station there; the other two did not come back.</li>
-    <li><b>Nothing lost elsewhere.</b> Fixed and other floating installations: 30 of 31 sites with either radius. The one both missed is the Johan Sverdrup complex,
-    five bridge-linked platforms with a detection nearby on only 2 of 6 map passes; that has not been looked into. On the May–October passes, near the swinging units the 300&nbsp;m map masks
+    <li><b>Nothing lost elsewhere.</b> Fixed and other floating installations: 30 of 31 sites with either radius. The one both missed is the Johan Sverdrup field centre, five bridge-linked platforms 783&nbsp;m end to end, with a detection
+    nearby on only 2 of 6 map passes. Looked at afterwards (<a href="https://github.com/shivaji-patil/maritime-target-correlation/blob/main/tools/fresh6_posthoc.py"><code>tools/fresh6_posthoc.py</code></a>, <a href="https://github.com/shivaji-patil/maritime-target-correlation/blob/main/results/fresh6_posthoc.md"><code>results/fresh6_posthoc.md</code></a>),
+    it is the brightest return of all 47 scored units and sites (13.8&nbsp;dB), but CFAR scores each pixel against the sea in a ring
+    about 155–405&nbsp;m away, and here that ring holds the complex's other platforms. They lift its spread to about 7&nbsp;dB
+    (a median of 2.4&nbsp;dB around single installations), which holds the platforms' scores at 4.2–5.7, right at the threshold of 5.
+    Against the same ring's median and robust spread they score 8–13. That is the known weakness of a mean-and-standard-deviation CFAR among
+    many bright targets; the usual remedy (an order-statistic background) has not been tested here for its false alarms on open sea, so production is unchanged. On the May–October passes, near the swinging units the 300&nbsp;m map masks
     72 of 99 detections against 52, more at 7 units and fewer at none.</li>
   </ul>
   <p><b>Reading under the rule fixed in advance: no demonstrated improvement.</b> Production keeps 100&nbsp;m. The direction is right, but 3 units are too few, and the power table written
