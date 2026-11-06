@@ -26,16 +26,16 @@
       <div><b>12</b><span>Sentinel-1 passes, 226 AIS ships, 10,469 km² of open water</span></div>
     </div>
     <p class="note">Baseline: classical constant false-alarm rate (CFAR) detection. Truth: AIS, which misses vessels without transponders, so false-alarm figures are upper bounds.</p>
-    <p class="cta"><a href="brief.pdf">Two-page brief (PDF)</a> <a href="note.pdf">Technical note: five pre-registered tests (PDF)</a> <a href="https://github.com/shivaji-patil/maritime-target-correlation">Code on GitHub</a></p>
-    <p class="note">Last updated <mark class="ts">5 Nov 2026, 19:34 UTC (5 Nov, 16:04 NST)</mark>.</p>
+    <p class="cta"><a href="brief.pdf">Two-page brief (PDF)</a> <a href="note.pdf">Technical note: six pre-registered tests (PDF)</a> <a href="https://github.com/shivaji-patil/maritime-target-correlation">Code on GitHub</a></p>
+    <p class="note">Last updated <mark class="ts">6 Nov 2026, 02:43 UTC (5 Nov, 23:13 NST)</mark>.</p>
   </div>
 </header>
 <main class="wrap">
 <section class="summary">
   <h2>In 30 seconds</h2>
   <ul>
-    <li><b>Tested the way an operator would need.</b> Five fresh test sets in 23 new US areas: the areas, the pass rule and the success criteria were committed before
-    any data was fetched and pushed to GitHub before scoring (the last two before fetching too), each on a branch of its own; GitHub's push log for each records when it arrived (<a href="https://github.com/shivaji-patil/maritime-target-correlation/activity?ref=fresh-prereg"><code>fresh-prereg</code></a>, <a href="https://github.com/shivaji-patil/maritime-target-correlation/activity?ref=fresh2-prereg"><code>fresh2-prereg</code></a>, <a href="https://github.com/shivaji-patil/maritime-target-correlation/activity?ref=fresh3-prereg"><code>fresh3-prereg</code></a>, <a href="https://github.com/shivaji-patil/maritime-target-correlation/activity?ref=fresh4-prereg"><code>fresh4-prereg</code></a>, <a href="https://github.com/shivaji-patil/maritime-target-correlation/activity?ref=fresh5-prereg"><code>fresh5-prereg</code></a>). Each was scored once. Results are reported whichever way they came out.</li>
+    <li><b>Tested the way an operator would need.</b> Five fresh test sets in 23 new US areas, and a sixth in seven Norwegian and UK production areas: the areas, the pass rule and the success criteria were committed before
+    any data was fetched and pushed to GitHub before scoring (the last three before fetching too), each on a branch of its own; GitHub's push log for each records when it arrived (<a href="https://github.com/shivaji-patil/maritime-target-correlation/activity?ref=fresh-prereg"><code>fresh-prereg</code></a>, <a href="https://github.com/shivaji-patil/maritime-target-correlation/activity?ref=fresh2-prereg"><code>fresh2-prereg</code></a>, <a href="https://github.com/shivaji-patil/maritime-target-correlation/activity?ref=fresh3-prereg"><code>fresh3-prereg</code></a>, <a href="https://github.com/shivaji-patil/maritime-target-correlation/activity?ref=fresh4-prereg"><code>fresh4-prereg</code></a>, <a href="https://github.com/shivaji-patil/maritime-target-correlation/activity?ref=fresh5-prereg"><code>fresh5-prereg</code></a>, <a href="https://github.com/shivaji-patil/maritime-target-correlation/activity?ref=fresh6-prereg"><code>fresh6-prereg</code></a>). Each was scored once. Results are reported whichever way they came out.</li>
     <li><b>A learned detector was not good enough, and the gate gained a rule.</b> A Sentinel-1 ResNet-50 classifier passed the promotion gate, but on fresh water it produced
     59% more false alarms than classical constant false-alarm rate (CFAR) detection set to find as many ships. It was not promoted. The gate gained an equal-recall rule, but the classifier
     still passes it on the original test passes; only the fresh test caught the problem.</li>
@@ -53,8 +53,12 @@
     <li><b>On Canadian water.</b> Over the Grand Banks oil fields, with no AIS and no list of structures, the same map found 3 of the
     regulator's 4 production installations (the pre-registered bar was all four) and the new West White Rose platform, with no other spot.
     The fourth, SeaRose, appears on every pass 2.0&nbsp;km from its listed position, and swings too far for the map's 100&nbsp;m rule.</li>
+    <li><b>A wider radius for swinging production ships.</b> In a sixth pre-registered test on seven Norwegian and UK production areas, scored against
+    the regulators' installation lists with no AIS, a 300&nbsp;m map radius found 15 of 16 turret- and buoy-moored production ships against 12
+    for production's 100&nbsp;m, but 3 more fell short of the 5 the test needed, and it added 3 places away from any installation.
+    Reading: <b>no demonstrated improvement</b>, so production keeps 100&nbsp;m.</li>
     <li><b>Traceable.</b> Every result on this page is read from a results file in <a href="https://github.com/shivaji-patil/maritime-target-correlation">the repository</a>; only the list of scheduled live passes comes from a local file. All but the Danish figures (copied from the Danish-waters study, a separate, private
-    repository) are computed there by scripts; the learned-detector results also need trained weights that are not included. The code has 157 tests, and every detector
+    repository) are computed there by scripts; the learned-detector results also need trained weights that are not included. The code has 192 tests, and every detector
     version and gate decision is recorded in an MLflow registry (exported to <a href="https://github.com/shivaji-patil/maritime-target-correlation/blob/main/results/mlops.json"><code>results/mlops.json</code></a>).</li>
   </ul>
 </section>
@@ -243,7 +247,7 @@
   <p>A check on Canadian water, where no historical AIS is available. Production CFAR ran on 12 Sentinel-1 passes (HH/HV, November 2025 to October 2026) over
   the Jeanne d'Arc Basin fields, about 350&nbsp;km east-southeast of St.&nbsp;John's. The six November–April passes built the map with no list of structures.
   The installation list (the C-NLOPB layer, plus the West White Rose platform from the provincial layer), the pass rule and the success criterion were committed
-  before any radar data was fetched (local commit <a href="https://github.com/shivaji-patil/maritime-target-correlation/commit/d756a57"><code>d756a57</code></a>, not pushed before scoring; Tests 1 to 5 were pushed to GitHub before scoring). Found means a map spot within 500&nbsp;m, the safety-zone radius.</p>
+  before any radar data was fetched (local commit <a href="https://github.com/shivaji-patil/maritime-target-correlation/commit/d756a57"><code>d756a57</code></a>, not pushed before scoring; Tests 1 to 6 were pushed to GitHub before scoring). Found means a map spot within 500&nbsp;m, the safety-zone radius.</p>
   <div class="scroll"><table><thead><tr><th>Installation</th><th>Listed by</th><th>Nearest map spot</th><th>Result</th><th>Detected within 500&nbsp;m of the listed point</th></tr></thead>
   <tbody><tr><td>Hibernia</td><td>C-NLOPB</td><td>85&nbsp;m</td><td><b>found</b></td><td>12 of 12</td></tr><tr><td>Hebron</td><td>C-NLOPB</td><td>57&nbsp;m</td><td><b>found</b></td><td>12 of 12</td></tr><tr><td>Terra Nova FPSO</td><td>C-NLOPB</td><td>134&nbsp;m</td><td><b>found</b></td><td>12 of 12</td></tr><tr><td>SeaRose FPSO</td><td>C-NLOPB</td><td>3,673&nbsp;m</td><td><b>not found</b></td><td>0 of 12</td></tr><tr><td>West White Rose (installed 2025)</td><td>NL government</td><td>78&nbsp;m</td><td><b>found</b></td><td>12 of 12</td></tr></tbody></table></div>
   <p><b>3 of 4</b> listed installations were found, short of the pre-registered bar of all four; West White Rose, which the regulator's layer does not list yet, was found too.
@@ -255,7 +259,8 @@
   61&nbsp;m from Wikipedia's position for the field and 209&nbsp;m from the World Ports Directory's,
   but 1,999&nbsp;m from the regulator's point, which agrees on longitude and differs by about 1′05″ of latitude. It also weathervanes on its turret:
   its return moves up to 382&nbsp;m between passes, more than the map's 100&nbsp;m recurrence radius. Rebuilt with a 300&nbsp;m radius (about one hull length), the map puts a spot
-  40&nbsp;m from SeaRose and none away from the installations, but that radius was chosen after seeing this data, so it is the design for the next test, not a result.
+  40&nbsp;m from SeaRose and none away from the installations, but that radius was chosen after seeing this data, so it is not a result here: it was put to a test of its own on new water
+  (<a href="#sixth-test">the sixth pre-registered test</a>, <b>no demonstrated improvement</b>).
   Two lessons: size the recurrence radius to the largest swing (a moored FPSO), and treat a published position as something to check.</p>
 </section>
 
@@ -327,6 +332,37 @@
   </ul>
   <p>Where this leaves the flag: in dense fields, many of its "false alarms" are probably small service boats without AIS, real vessels that AIS truth counts against it.
   Progress there needs a different kind of truth, such as analyst review in the console, not another threshold.</p>
+</section>
+
+<section id="sixth-test">
+  <h2>Sixth pre-registered test: a wider radius for swinging production ships</h2>
+  <p class="note">Rules, areas, unit list and pass list fixed <mark class="ts">6 Nov 2026, 00:07 UTC (5 Nov, 20:37 NST)</mark> and pushed to GitHub (commit <a href="https://github.com/shivaji-patil/maritime-target-correlation/commit/79a443c"><code>79a443c</code></a> on branch <a href="https://github.com/shivaji-patil/maritime-target-correlation/blob/fresh6-prereg/config/fresh6_test.json"><code>fresh6-prereg</code></a>, <a href="https://github.com/shivaji-patil/maritime-target-correlation/activity?ref=fresh6-prereg">push log</a>) before any of the radar was fetched. Scored once, <mark class="ts">6 Nov 2026, 02:32 UTC (5 Nov, 23:02 NST)</mark> (commit <a href="https://github.com/shivaji-patil/maritime-target-correlation/commit/5388472"><code>5388472</code></a>).</p>
+  <p>On the Grand Banks the map missed SeaRose partly because a turret-moored production ship swings with wind and current: its return moved up to 382&nbsp;m between passes,
+  and the map's recurrence radius is 100&nbsp;m. A 300&nbsp;m radius (about one hull length) found it there, but that radius was chosen after seeing the data, so it was tested on new water:
+  seven production areas of the Norwegian Sea and the northern and central North Sea with 16 ship-shaped production and storage units on a turret or buoy.
+  There is no AIS here. Truth is the regulators' lists (the Norwegian Offshore Directorate's FactPages and the North Sea Transition Authority's offshore infrastructure points),
+  with each unit's mooring type and independent positions taken from public, non-AIS documents before any radar was read. Both radii build their maps from the same CFAR
+  detections on each area's six November–April passes (84 passes in all, 22,431&nbsp;km² of map water).</p>
+  <div class="scroll"><table><thead><tr><th>Swinging unit</th><th>Area</th><th>Return moved up to</th><th>Nearest spot, 100&nbsp;m map</th><th>Nearest spot, 300&nbsp;m map</th><th>Found by 100&nbsp;m</th><th>Found by 300&nbsp;m</th></tr></thead>
+  <tbody><tr><td>Norne FPSO</td><td>Norne / Skarv</td><td>192&nbsp;m</td><td>53&nbsp;m</td><td>53&nbsp;m</td><td>yes</td><td>yes</td></tr><tr><td>Skarv FPSO</td><td>Norne / Skarv</td><td>247&nbsp;m</td><td>9&nbsp;m</td><td>50&nbsp;m</td><td>yes</td><td>yes</td></tr><tr><td>Heidrun FSU</td><td>Åsgard / Heidrun</td><td>175&nbsp;m</td><td>21&nbsp;m</td><td>51&nbsp;m</td><td>yes</td><td>yes</td></tr><tr><td>Åsgard A</td><td>Åsgard / Heidrun</td><td>122&nbsp;m</td><td>29&nbsp;m</td><td>29&nbsp;m</td><td>yes</td><td>yes</td></tr><tr><td><b>Åsgard C</b></td><td>Åsgard / Heidrun</td><td>440&nbsp;m</td><td>4,286&nbsp;m</td><td>167&nbsp;m</td><td>no</td><td><b>yes</b></td></tr><tr><td><b>Njord Bravo</b></td><td>Njord</td><td>389&nbsp;m</td><td>2,557&nbsp;m</td><td>71&nbsp;m</td><td>no</td><td><b>yes</b></td></tr><tr><td>Alvheim FPSO</td><td>Balder / Utsira</td><td>228&nbsp;m</td><td>19&nbsp;m</td><td>42&nbsp;m</td><td>yes</td><td>yes</td></tr><tr><td>Balder FPU</td><td>Balder / Utsira</td><td>250&nbsp;m</td><td>33&nbsp;m</td><td>48&nbsp;m</td><td>yes</td><td>yes</td></tr><tr><td>Jotun FPSO</td><td>Balder / Utsira</td><td>152&nbsp;m</td><td>588&nbsp;m</td><td>562&nbsp;m</td><td>no (yes at its independent position)</td><td>no (yes at its independent position)</td></tr><tr><td>Culzean FSO</td><td>UK central North Sea, east</td><td>381&nbsp;m</td><td>27&nbsp;m</td><td>93&nbsp;m</td><td>yes</td><td>yes</td></tr><tr><td>Haewene Brim (Pierce)</td><td>UK central North Sea, east</td><td>89&nbsp;m</td><td>39&nbsp;m</td><td>39&nbsp;m</td><td>yes</td><td>yes</td></tr><tr><td>Anasuria</td><td>UK central North Sea, west</td><td>300&nbsp;m</td><td>146&nbsp;m</td><td>111&nbsp;m</td><td>yes</td><td>yes</td></tr><tr><td><b>Catcher</b></td><td>UK central North Sea, west</td><td>452&nbsp;m</td><td>36,595&nbsp;m</td><td>129&nbsp;m</td><td>no</td><td><b>yes</b></td></tr><tr><td>Triton FPSO</td><td>UK central North Sea, west</td><td>364&nbsp;m</td><td>111&nbsp;m</td><td>107&nbsp;m</td><td>yes</td><td>yes</td></tr><tr><td>Kraken FPSO</td><td>Kraken / Mariner</td><td>339&nbsp;m</td><td>162&nbsp;m</td><td>73&nbsp;m</td><td>yes</td><td>yes</td></tr><tr><td>Mariner B FSU</td><td>Kraken / Mariner</td><td>375&nbsp;m</td><td>37&nbsp;m</td><td>31&nbsp;m</td><td>yes</td><td>yes</td></tr></tbody></table></div>
+  <ul>
+    <li><b>Found within 500&nbsp;m of the listed position: 12 of 16 with 100&nbsp;m, 15 with 300&nbsp;m.</b> The three that only 300&nbsp;m found swing
+    389–452&nbsp;m between passes, and 300&nbsp;m lost none that 100&nbsp;m found. The pre-registered bar was 5 more (with 3, one-sided p&nbsp;=&nbsp;0.125).
+    Floating hulls that do not swing were found by both radii, so the gain comes from the swing. Accepting each unit's independent positions too: 13 and 16 of 16.
+    Jotun's listed point is about 600&nbsp;m from the Norwegian Mapping Authority's position, where both radii found it: like SeaRose, a published position that is off.</li>
+    <li><b>The cost: 3 places away from any listed installation</b> (0.13 per 1,000&nbsp;km²; the bar was 0.1, which here allows 2).
+    One, about 3&nbsp;km from Heidrun, came back on 4 of the 6 May–October passes, so something unlisted stands or keeps station there; the other two did not come back.</li>
+    <li><b>Nothing lost elsewhere.</b> Fixed and other floating installations: 30 of 31 sites with either radius. The one both missed is the Johan Sverdrup complex,
+    five bridge-linked platforms with a detection nearby on only 2 of 6 map passes; that has not been looked into. On the May–October passes, near the swinging units the 300&nbsp;m map masks
+    72 of 99 detections against 52, more at 7 units and fewer at none.</li>
+  </ul>
+  <p><b>Reading under the rule fixed in advance: no demonstrated improvement.</b> Production keeps 100&nbsp;m. The direction is right, but 3 units are too few, and the power table written
+  before the data said so: if the wider radius rescues about one swinging unit in five, as it did here, the chance of reaching 5 was 20%.
+  Settling it needs more swinging units than these fields hold.</p>
+  <p class="small">Planetary Computer refused reads (HTTP 403) partway through the first two download runs; the third built the rest. The frozen rules allow reruns for network errors,
+  and no area or pass was dropped or replaced. These passes are VV+VH, so CFAR ran on VH; the Grand Banks passes were HH+HV.
+  Installations: contains data from the Norwegian Offshore Directorate (Sodir) FactPages, under the Norwegian Licence for Open Government Data (NLOD) 2.0; contains information provided by the
+  North Sea Transition Authority and/or other third parties, used under the NSTA User Agreement (non-commercial use).</p>
 </section>
 
 <section>
@@ -412,7 +448,7 @@
   <p>The same code is built to run as a service for Vancouver and St. John's harbours. Timers record AIS around each pass, and a processor checks every 6&nbsp;hours for newly published scenes.
   For each pass it writes products, alerts and a run-log line with the time from sensing to report. It processed its first live pass, Vancouver on 22 October 2026 (above), then stopped when its timers
   were lost. It was restarted on 5 November 2026 with a planner timer that recreates them at every start; the St. John's pass of 26 October, recorded before it stopped, was processed then.</p>
-  <p>The passes it had scheduled next:</p><ul><li><b>Vancouver harbour</b>: Thu 05 Nov 22:32 NDT (06 Nov 02:02 UTC), Sentinel-1C, relative orbit 137: nothing recorded</li><li><b>St. John&#x27;s harbour</b>: Sat 07 Nov 06:11 NDT (07 Nov 09:41 UTC), Sentinel-1C, relative orbit 156: nothing recorded</li><li><b>St. John&#x27;s harbour</b>: Sun 08 Nov 06:03 NDT (08 Nov 09:33 UTC), Sentinel-1D, relative orbit 83: nothing recorded</li><li><b>St. John&#x27;s harbour</b>: Mon 09 Nov 17:51 NDT (09 Nov 21:21 UTC), Sentinel-1D, relative orbit 105: nothing recorded</li></ul>
+  <p>The passes it had scheduled next:</p><ul><li><b>Vancouver harbour</b>: Thu 05 Nov 22:32 NDT (06 Nov 02:02 UTC), Sentinel-1C, relative orbit 137: AIS recorded, not processed</li><li><b>St. John&#x27;s harbour</b>: Sat 07 Nov 06:11 NDT (07 Nov 09:41 UTC), Sentinel-1C, relative orbit 156: nothing recorded</li><li><b>St. John&#x27;s harbour</b>: Sun 08 Nov 06:03 NDT (08 Nov 09:33 UTC), Sentinel-1D, relative orbit 83: nothing recorded</li><li><b>St. John&#x27;s harbour</b>: Mon 09 Nov 17:51 NDT (09 Nov 21:21 UTC), Sentinel-1D, relative orbit 105: nothing recorded</li></ul>
   <p class="small">Latency today is dominated by the data source. Planetary Computer publishes terrain-corrected Sentinel-1 hours to days after sensing.
   For near-real-time use the same pipeline would read Copernicus NRT products or a commercial feed, and the 52&nbsp;s of processing on the live pass, which includes reading the scene, would follow the scene's arrival.</p>
 </section>
