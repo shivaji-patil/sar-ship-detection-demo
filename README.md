@@ -4,7 +4,7 @@ The demo site for a prototype that finds ships in Sentinel-1 radar images, check
 ones AIS does not account for. Built by Shivaji Patil in October and November 2026. The site: <https://shivaji-patil.github.io/sar-ship-detection-demo/>
 
 This repository only hosts the built site. It is generated from the code repository,
-<https://github.com/shivaji-patil/maritime-target-correlation>, by `tools/build_site.py`, and every result on the page is read from a results file there.
+a private repository, by `tools/build_site.py`, and every result on the page is read from a results file there.
 `brief.pdf` is the two-page brief and `note.pdf` the technical note; both are built in the code repository too.
 
 ## Licence
